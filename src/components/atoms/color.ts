@@ -1,0 +1,1 @@
+export const Pink = "#ff48b0";

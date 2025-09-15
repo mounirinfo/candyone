@@ -1,0 +1,545 @@
+"use client";
+
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import {
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Box,
+  Grid,
+  FormControlLabel,
+  Checkbox,
+  InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  CircularProgress,
+  Divider,
+  Stepper,
+  Step,
+  StepLabel,
+  styled
+} from "@mui/material";
+import {
+  Person as UserIcon,
+  Email as MailIcon,
+  Phone as PhoneIcon,
+  Home as HomeIcon,
+  LocationOn as MapPinIcon,
+  CalendarToday as CalendarIcon,
+  Lock as LockIcon,
+  Security as ShieldIcon,
+  ArrowBack as ArrowBackIcon,
+} from "@mui/icons-material";
+
+type FormData = {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  anniversaire: string;
+  codePostal: string;
+  numero: string;
+  rue: string;
+  ville: string;
+  genre: string;
+  acceptMarketing: boolean;
+  acceptContact: boolean;
+};
+
+const schema = yup.object().shape({
+  email: yup.string().email("Email invalide").required("L'email est requis"),
+  password: yup
+    .string()
+    .min(8, "Minimum 8 caractères")
+    .required("Mot de passe requis"),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref("password")], "Les mots de passe doivent correspondre")
+    .required("Confirmation requise"),
+  nom: yup.string().required("Le nom est requis"),
+  prenom: yup.string().required("Le prénom est requis"),
+  telephone: yup
+    .string()
+    .matches(/^[0-9]+$/, "Numéro invalide")
+    .min(10, "Numéro trop court")
+    .required("Le téléphone est requis"),
+  anniversaire: yup.string().required("La date de naissance est requise"),
+  codePostal: yup.string().required("Le code postal est requis"),
+  numero: yup.string().required("Le numéro de rue est requis"),
+  rue: yup.string().required("La rue est requise"),
+  ville: yup.string().required("La ville est requise"),
+  genre: yup.string().required("Le genre est requis"),
+  acceptMarketing: yup.boolean(),
+  acceptContact: yup.boolean(),
+});
+
+const steps = [
+  "Choix de la salle",
+  "Choix de l'abonnement",
+  "Options",
+  "Coordonnées",
+];
+
+const BackgroundContainer = styled(Box)({
+  minHeight: '100vh',
+  backgroundImage: 'url("/macaron.jpg")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '16px'
+});
+
+export default function Coordonnees() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      acceptMarketing: false,
+      acceptContact: false,
+      genre: "",
+    },
+  });
+
+  const onSubmit = async (formData: FormData) => {
+    setIsLoading(true);
+    console.log("Données envoyées :", formData);
+
+    try {
+      // 🚀 Ici tu peux remplacer par un appel API:
+      // await fetch("/api/register", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(formData),
+      // });
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      router.push("/inscription/success");
+    } catch (error) {
+      console.error(error);
+      alert("Une erreur est survenue");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  return (
+    <BackgroundContainer>
+      <Container maxWidth="md">
+        <Card sx={{ borderRadius: 3, boxShadow: 3, backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
+          <CardContent sx={{ p: 4 }}>
+            {/* Stepper */}
+            <Stepper activeStep={3} alternativeLabel sx={{ mb: 4 }}>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel
+                    sx={{
+                      "& .MuiStepLabel-label": {
+                        fontWeight: 600,
+                        color: "#2D3748",
+                      },
+                    }}
+                  >
+                    {label}
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+
+            <Box sx={{ textAlign: "center", mb: 4 }}>
+              <Typography variant="h4" component="h1" fontWeight="bold" color="text.primary" gutterBottom>
+                Inscription
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Créez votre compte
+              </Typography>
+            </Box>
+
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Grid container spacing={3}>
+                {/* Colonne 1 */}
+                <Grid item xs={12} md={6}>
+                  {/* Email */}
+                  <Controller
+                    name="email"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        type="email"
+                        label="Email"
+                        error={!!errors.email}
+                        helperText={errors.email?.message}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <MailIcon color="primary" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{ mb: 2 }}
+                      />
+                    )}
+                  />
+
+                  {/* Mot de passe */}
+                  <Controller
+                    name="password"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        type="password"
+                        label="Mot de passe"
+                        error={!!errors.password}
+                        helperText={errors.password?.message}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <LockIcon color="primary" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{ mb: 2 }}
+                      />
+                    )}
+                  />
+
+                  {/* Confirmation mot de passe */}
+                  <Controller
+                    name="confirmPassword"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        type="password"
+                        label="Confirmez le mot de passe"
+                        error={!!errors.confirmPassword}
+                        helperText={errors.confirmPassword?.message}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <ShieldIcon color="primary" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{ mb: 2 }}
+                      />
+                    )}
+                  />
+
+                  {/* Prénom */}
+                  <Controller
+                    name="prenom"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        type="text"
+                        label="Prénom"
+                        error={!!errors.prenom}
+                        helperText={errors.prenom?.message}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <UserIcon color="primary" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{ mb: 2 }}
+                      />
+                    )}
+                  />
+
+                  {/* Nom */}
+                  <Controller
+                    name="nom"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        type="text"
+                        label="Nom"
+                        error={!!errors.nom}
+                        helperText={errors.nom?.message}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <UserIcon color="primary" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{ mb: 2 }}
+                      />
+                    )}
+                  />
+                </Grid>
+
+                {/* Colonne 2 */}
+                <Grid item xs={12} md={6}>
+                  {/* Téléphone */}
+                  <Controller
+                    name="telephone"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        type="tel"
+                        label="Téléphone"
+                        error={!!errors.telephone}
+                        helperText={errors.telephone?.message}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <PhoneIcon color="primary" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{ mb: 2 }}
+                      />
+                    )}
+                  />
+
+                  {/* Date de naissance */}
+                  <Controller
+                    name="anniversaire"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        type="date"
+                        label="Date de naissance"
+                        InputLabelProps={{ shrink: true }}
+                        error={!!errors.anniversaire}
+                        helperText={errors.anniversaire?.message}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <CalendarIcon color="primary" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{ mb: 2 }}
+                      />
+                    )}
+                  />
+
+                  {/* Adresse */}
+                  <Grid container spacing={2} sx={{ mb: 2 }}>
+                    <Grid item xs={4}>
+                      <Controller
+                        name="numero"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            type="text"
+                            label="N°"
+                            error={!!errors.numero}
+                            helperText={errors.numero?.message}
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Controller
+                        name="rue"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            type="text"
+                            label="Rue"
+                            error={!!errors.rue}
+                            helperText={errors.rue?.message}
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <HomeIcon color="primary" />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  {/* Ville et Code Postal */}
+                  <Grid container spacing={2} sx={{ mb: 2 }}>
+                    <Grid item xs={6}>
+                      <Controller
+                        name="codePostal"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            type="text"
+                            label="Code Postal"
+                            error={!!errors.codePostal}
+                            helperText={errors.codePostal?.message}
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <MapPinIcon color="primary" />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Controller
+                        name="ville"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            type="text"
+                            label="Ville"
+                            error={!!errors.ville}
+                            helperText={errors.ville?.message}
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  {/* Genre */}
+                  <Controller
+                    name="genre"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControl fullWidth error={!!errors.genre} sx={{ mb: 2 }}>
+                        <InputLabel>Genre</InputLabel>
+                        <Select
+                          {...field}
+                          label="Genre"
+                          startAdornment={
+                            <InputAdornment position="start">
+                              <UserIcon color="primary" />
+                            </InputAdornment>
+                          }
+                        >
+                          <MenuItem value="Homme">Homme</MenuItem>
+                          <MenuItem value="Femme">Femme</MenuItem>
+                          <MenuItem value="Autre">Autre</MenuItem>
+                        </Select>
+                        {errors.genre && (
+                          <Typography variant="caption" color="error">
+                            {errors.genre.message}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              </Grid>
+
+              <Divider sx={{ my: 3 }} />
+
+              {/* Checkboxes */}
+              <Box sx={{ mb: 3 }}>
+                <Controller
+                  name="acceptMarketing"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          {...field}
+                          checked={field.value}
+                          color="primary"
+                        />
+                      }
+                      label="J'accepte de recevoir des offres promotionnelles"
+                    />
+                  )}
+                />
+                <br />
+                <Controller
+                  name="acceptContact"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          {...field}
+                          checked={field.value}
+                          color="primary"
+                        />
+                      }
+                      label="J'accepte d'être contacté par l'équipe"
+                    />
+                  )}
+                />
+              </Box>
+
+              {/* Boutons */}
+              <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleBack}
+                  startIcon={<ArrowBackIcon />}
+                  sx={{ flex: { xs: 1, sm: "none" } }}
+                >
+                  Retour
+                </Button>
+                
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={isLoading}
+                  sx={{ flex: 1, py: 1.5 }}
+                >
+                  {isLoading ? (
+                    <>
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      Inscription en cours...
+                    </>
+                  ) : (
+                    "S'inscrire"
+                  )}
+                </Button>
+              </Box>
+            </form>
+          </CardContent>
+        </Card>
+      </Container>
+    </BackgroundContainer>
+  );
+}

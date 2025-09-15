@@ -1,0 +1,49 @@
+import { NextRequest } from "next/server";
+import { supabaseServer } from "@/lib/supabaseServer";
+import { ok, badRequest, serverError, parseOrder } from "@/lib/api";
+
+export async function GET(req: NextRequest) {
+  const supabase = supabaseServer();
+  const url = new URL(req.url);
+  const select = url.searchParams.get("select") || "*";
+  const order = parseOrder(url.searchParams.get("order"));
+  const limit = url.searchParams.get("limit") ? Number(url.searchParams.get("limit")) : undefined;
+  const offset = url.searchParams.get("offset") ? Number(url.searchParams.get("offset")) : undefined;
+
+  let q = supabase.from("abonnement_option").select(select, { count: "exact" });
+
+  const abonnement_id = url.searchParams.get("abonnement_id");
+  if (abonnement_id) q = q.eq("abonnement_id", abonnement_id);
+  const option_id = url.searchParams.get("option_id");
+  if (option_id) q = q.eq("option_id", option_id);
+
+  if (order?.column) q = q.order(order.column, { ascending: order.ascending });
+  if (typeof limit === "number") q = q.limit(limit);
+  if (typeof offset === "number") q = q.range(offset, offset + (limit ?? 100) - 1);
+
+  const { data, error, count } = await q;
+  if (error) return serverError(error.message);
+  return ok({ count, data });
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => null);
+  if (!body) return badRequest("Invalid JSON body");
+  const supabase = supabaseServer();
+
+  const { data, error } = await supabase.from("abonnement_option").insert(body).select().maybeSingle();
+  if (error) return badRequest(error.message);
+  return ok(data, 201);
+}
+
+export async function DELETE(req: NextRequest) {
+  const url = new URL(req.url);
+    const abonnement_id = url.searchParams.get("abonnement_id");
+  const option_id = url.searchParams.get("option_id");
+  if (!abonnement_id || !option_id) return badRequest("abonnement_id and option_id are required");
+  const supabase = supabaseServer();
+  let q = supabase.from("abonnement_option").delete().eq("abonnement_id", abonnement_id!).eq("option_id", option_id!);
+  const { error } = await q;
+  if (error) return badRequest(error.message);
+  return ok({ ok: true });
+}

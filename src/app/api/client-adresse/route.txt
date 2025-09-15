@@ -1,0 +1,49 @@
+import { NextRequest } from "next/server";
+import { supabaseServer } from "@/lib/supabaseServer";
+import { ok, badRequest, serverError, parseOrder } from "@/lib/api";
+
+export async function GET(req: NextRequest) {
+  const supabase = supabaseServer();
+  const url = new URL(req.url);
+  const select = url.searchParams.get("select") || "*";
+  const order = parseOrder(url.searchParams.get("order"));
+  const limit = url.searchParams.get("limit") ? Number(url.searchParams.get("limit")) : undefined;
+  const offset = url.searchParams.get("offset") ? Number(url.searchParams.get("offset")) : undefined;
+
+  let q = supabase.from("client_adresse").select(select, { count: "exact" });
+
+  const client_id = url.searchParams.get("client_id");
+  if (client_id) q = q.eq("client_id", client_id);
+  const adresse_id = url.searchParams.get("adresse_id");
+  if (adresse_id) q = q.eq("adresse_id", adresse_id);
+
+  if (order?.column) q = q.order(order.column, { ascending: order.ascending });
+  if (typeof limit === "number") q = q.limit(limit);
+  if (typeof offset === "number") q = q.range(offset, offset + (limit ?? 100) - 1);
+
+  const { data, error, count } = await q;
+  if (error) return serverError(error.message);
+  return ok({ count, data });
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => null);
+  if (!body) return badRequest("Invalid JSON body");
+  const supabase = supabaseServer();
+
+  const { data, error } = await supabase.from("client_adresse").insert(body).select().maybeSingle();
+  if (error) return badRequest(error.message);
+  return ok(data, 201);
+}
+
+export async function DELETE(req: NextRequest) {
+  const url = new URL(req.url);
+    const client_id = url.searchParams.get("client_id");
+  const adresse_id = url.searchParams.get("adresse_id");
+  if (!client_id || !adresse_id) return badRequest("client_id and adresse_id are required");
+  const supabase = supabaseServer();
+  let q = supabase.from("client_adresse").delete().eq("client_id", client_id!).eq("adresse_id", adresse_id!);
+  const { error } = await q;
+  if (error) return badRequest(error.message);
+  return ok({ ok: true });
+}

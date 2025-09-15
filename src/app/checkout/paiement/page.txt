@@ -1,0 +1,21 @@
+import PaymentPage from "@/components/PaymentPage";
+import { HeroSection } from "@/components/Planning/HeroSection";
+
+export default function ClubSelectionPage() {
+  return (
+    <div
+      className="min-h-screen w-full flex items-center justify-center px-5 pt-20"
+      style={{
+        backgroundImage: 'url("/About/about.png")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+      }}
+    >
+        <div className="mt-16"> 
+        <PaymentPage />
+        </div>
+    </div>
+  );
+}

@@ -1,0 +1,22 @@
+"use client";
+
+import AbonnementSelection from "@/components/AbonnementSelection";
+
+export default function Page() {
+  return (
+    <div
+      className="min-h-screen w-full flex items-center justify-center px-5 pt-28"
+      style={{
+        backgroundImage: 'url("/About/about.png")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      <div className="mt-16"> 
+      <AbonnementSelection />
+        </div>
+    </div>
+  );
+}

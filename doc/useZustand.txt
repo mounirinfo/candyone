@@ -1,0 +1,74 @@
+Comment utiliser le code
+1) Remplacer les anciens contextes
+
+Supprime les RegistrationProvider, useRegistrationContext, SubscriptionProvider, useSubscriptionContext.
+
+Plus besoin de wrapper tes pages avec des Providers.
+
+2) Importer et consommer le store où tu veux
+
+Dans n’importe quel composant client (fichier avec "use client" en haut) :
+
+"use client";
+
+import { useRegistrationStore } from "@/stores/useRegistrationStore";
+import { useSubscriptionStore } from "@/stores/useSubscriptionStore";
+
+export default function Demo() {
+  const { registrationData, setSelectedClub, resetRegistration } = useRegistrationStore();
+  const { selectedClub, setSelectedPlan, resetSubscription } = useSubscriptionStore();
+
+  return (
+    <div>
+      <button onClick={() => setSelectedClub(42)}>Choisir club #42</button>
+      <button onClick={() => setSelectedPlan("premium")}>Plan Premium</button>
+      <button onClick={resetRegistration}>Reset inscription</button>
+      <button onClick={resetSubscription}>Reset subscription</button>
+
+      <pre>{JSON.stringify({ registrationData, selectedClub }, null, 2)}</pre>
+    </div>
+  );
+}
+
+3) Next.js (App Router) — points d’attention
+
+Les fichiers de store ont déjà "use client", donc pas d’accès serveur à localStorage.
+
+Évite d’utiliser ces hooks dans des composants server (sinon mismatch). Si besoin, mets un composant client parent.
+
+Pas besoin de Provider.
+
+4) (Optionnel) Sync multi-onglets
+
+Zustand persist réagira aux changements de localStorage, mais pour forcer un re-render instantané entre onglets, ajoute ce petit effet dans un composant racine client :
+
+"use client";
+import { useEffect } from "react";
+import { useRegistrationStore } from "@/stores/useRegistrationStore";
+import { useSubscriptionStore } from "@/stores/useSubscriptionStore";
+
+export function StorageSync() {
+  const rehydrateRegistration = useRegistrationStore.persist.rehydrate;
+  const rehydrateSubscription = useSubscriptionStore.persist.rehydrate;
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "registration-storage") rehydrateRegistration();
+      if (e.key === "subscription-storage") rehydrateSubscription();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [rehydrateRegistration, rehydrateSubscription]);
+
+  return null;
+}
+
+
+Place <StorageSync /> dans ton layout client si tu veux la synchro live entre onglets.
+
+5) Reset complet (et purge du localStorage)
+useRegistrationStore.getState().resetRegistration();
+useSubscriptionStore.getState().resetSubscription();
+// Ou pour purger totalement la persistance :
+localStorage.removeItem("registration-storage");
+localStorage.removeItem("subscription-storage");
