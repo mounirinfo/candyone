@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Box, Stack, styled } from "@mui/material";
+import { Box, Stack, styled, useMediaQuery, useTheme } from "@mui/material";
 import RoundedImage3 from "../atoms/RoundedImage3";
 import HugeTitle from "../atoms/HugeTitle";
 import SoftSubtitle from "../atoms/SoftSubtitle";
@@ -34,25 +34,42 @@ const Grid = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const ExpertiseTeaser: React.FC<ExpertiseTeaserProps> = ({ title, subtitle, leftImageUrl, rightImageUrl, card, ctaLabel, onCta }) => (
-  <Panel>
-    <Grid>
-      <RoundedImage3>
-        <img src={leftImageUrl} alt="expertise left" />
-      </RoundedImage3>
+export const ExpertiseTeaser: React.FC<ExpertiseTeaserProps> = ({
+  title,
+  subtitle,
+  leftImageUrl,
+  rightImageUrl,
+  card,
+  ctaLabel,
+  onCta,
+}) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // ✅ détecte mobile
 
-      <Stack spacing={2} alignItems={{ xs: "center", md: "flex-start" }}>
-        <HugeTitle>{title}</HugeTitle>
-        <SoftSubtitle>{subtitle}</SoftSubtitle>
-        <ExpertiseCard {...card} />
-        <PillCTA onClick={onCta}>{ctaLabel}</PillCTA>
-      </Stack>
+  return (
+    <Panel>
+      <Grid>
+        {!isMobile && (
+          <RoundedImage3>
+            <img src={leftImageUrl} alt="expertise left" />
+          </RoundedImage3>
+        )}
 
-      <RoundedImage3>
-        <img src={rightImageUrl} alt="expertise right" />
-      </RoundedImage3>
-    </Grid>
-  </Panel>
-);
+        <Stack spacing={2} alignItems={{ xs: "center", md: "flex-start" }} textAlign={{ xs: "center", md: "left" }}>
+          <HugeTitle>{title}</HugeTitle>
+          <SoftSubtitle>{subtitle}</SoftSubtitle>
+          <ExpertiseCard {...card} />
+          <PillCTA onClick={onCta}>{ctaLabel}</PillCTA>
+        </Stack>
+
+        {!isMobile && (
+          <RoundedImage3>
+            <img src={rightImageUrl} alt="expertise right" />
+          </RoundedImage3>
+        )}
+      </Grid>
+    </Panel>
+  );
+};
 
 export default ExpertiseTeaser;

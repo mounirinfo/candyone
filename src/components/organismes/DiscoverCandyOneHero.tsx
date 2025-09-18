@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Box, Stack, styled } from "@mui/material";
+import { Box, Stack, styled, useTheme, useMediaQuery } from "@mui/material";
 import HeroHeader from "../molecules/HeroHeader";
 import ScriptPrice from "../atoms/ScriptPrice";
 import ReserveBtn from "../atoms/ReserveBtn";
@@ -25,33 +25,53 @@ const Grid = styled(Box, {
   display: "grid",
   gap: theme.spacing(3),
   gridTemplateColumns: "1fr",
+  textAlign: "center",
   [theme.breakpoints.up("md")]: {
     gridTemplateColumns: "1.1fr 1fr",
     alignItems: "center",
+    textAlign: "left",
   },
 }));
 
-export const DiscoverCandyOneHero: React.FC<DiscoverCandyOneHeroProps> = ({ rightImageUrl, onReserve, onReserveHref, bgColor }) => 
-  {
-    const router = useRouter();
-    return (
-  <Grid bgColor={bgColor}>
-    <Stack spacing={1}>
-      <HeroHeader title="DÉCOUVREZ" subtitle="Candy One" />
-      <ScriptPrice>A partir de 9,99€ / 4 semaines</ScriptPrice>
-      {onReserveHref ? (
-        <ReserveBtn onClick={() =>router.push(onReserveHref)}>RÉSERVEZ</ReserveBtn>
-      ) : (
-        <ReserveBtn onClick={onReserve}>RÉSERVEZ</ReserveBtn>
-      )}
-    </Stack>
+export const DiscoverCandyOneHero: React.FC<DiscoverCandyOneHeroProps> = ({
+  rightImageUrl,
+  onReserve,
+  onReserveHref,
+  bgColor,
+}) => {
+  const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-    <ClipRight>
-      <img src={rightImageUrl} alt="visuel Candy One" />
-    </ClipRight>
-  </Grid>
-    
-);
-  }
+  return (
+    <Grid bgColor={bgColor}>
+      <Stack spacing={2}>
+        <HeroHeader title="DÉCOUVREZ" subtitle="Candy One" />
+        <ScriptPrice>A partir de 9,99€ / 4 semaines</ScriptPrice>
+        {onReserveHref ? (
+          <ReserveBtn onClick={() => router.push(onReserveHref)}>
+            RÉSERVEZ
+          </ReserveBtn>
+        ) : (
+          <ReserveBtn onClick={onReserve}>RÉSERVEZ</ReserveBtn>
+        )}
+      </Stack>
+
+      {!isMobile && (
+        <ClipRight>
+          <img
+            src={rightImageUrl}
+            alt="visuel Candy One"
+            style={{
+              maxWidth: "100%",
+              height: "auto",
+              borderRadius: 12,
+            }}
+          />
+        </ClipRight>
+      )}
+    </Grid>
+  );
+};
 
 export default DiscoverCandyOneHero;

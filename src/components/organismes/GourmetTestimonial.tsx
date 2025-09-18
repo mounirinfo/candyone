@@ -1,11 +1,10 @@
-"use client"
+"use client";
 import React from "react";
-import { Box, Stack, styled } from "@mui/material";
+import { Box, Stack, styled, useMediaQuery, useTheme } from "@mui/material";
 import SoftPanel from "../atoms/SoftPanel";
 import RoundedImage2 from "../atoms/RoundedImage2";
 import Title from "../atoms/Title";
 import Title2 from "../atoms/Title2";
-
 import TestimonialBody from "../molecules/TestimonialBody";
 
 export type GourmetTestimonialProps = {
@@ -13,7 +12,7 @@ export type GourmetTestimonialProps = {
   name: string;
   rating?: number;
   paragraphs: string[];
-  bgColor?: string; // Nouvelle prop pour la couleur de fond
+  bgColor?: string; 
 };
 
 const Grid = styled(Box)(({ theme }) => ({
@@ -26,23 +25,36 @@ const Grid = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const GourmetTestimonial: React.FC<GourmetTestimonialProps> = ({ imageUrl, name, rating = 5, paragraphs, bgColor }) => (
-  <SoftPanel bgColor={bgColor}>
-    <Grid>
-      <RoundedImage2>
-        <img src={imageUrl} alt={name} />
-      </RoundedImage2>
+export const GourmetTestimonial: React.FC<GourmetTestimonialProps> = ({
+  imageUrl,
+  name,
+  rating = 5,
+  paragraphs,
+  bgColor,
+}) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
 
-      <Stack spacing={0}>
+  return (
+    <SoftPanel bgColor={bgColor}>
+      <Grid>
+        {!isMobile && (
+          <RoundedImage2>
+            <img src={imageUrl} alt={name} />
+          </RoundedImage2>
+        )}
+
         <Stack spacing={0}>
-  <Title sx={{ mb: 0 }}>L’AVIS</Title>
-  <Title2 sx={{ mt: -5 }}>D’UN GOURMET</Title2>
-</Stack>
+          <Stack spacing={0}>
+            <Title sx={{ mb: 0 }}>L’AVIS</Title>
+            <Title2 sx={{ mt: -5 }}>D’UN GOURMET</Title2>
+          </Stack>
 
-        <TestimonialBody name={name} rating={rating} paragraphs={paragraphs} />
-      </Stack>
-    </Grid>
-  </SoftPanel>
-);
+          <TestimonialBody name={name} rating={rating} paragraphs={paragraphs} />
+        </Stack>
+      </Grid>
+    </SoftPanel>
+  );
+};
 
 export default GourmetTestimonial;

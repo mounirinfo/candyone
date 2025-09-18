@@ -1,7 +1,13 @@
 "use client";
 
 import React from "react";
-import { Box, Typography, styled } from "@mui/material";
+import {
+  Box,
+  Typography,
+  styled,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import RoundedImage4 from "../atoms/RoundedImage";
 import NameTitle from "../atoms/NameTitle";
 import SubTitle from "../atoms/SubTitle";
@@ -18,7 +24,7 @@ export type PersonalTrainerProps = {
 const Grid = styled(Box)(({ theme }) => ({
   display: "grid",
   gridTemplateColumns: "1fr",
-  justifyItems: "center", 
+  justifyItems: "center",
   [theme.breakpoints.up("md")]: {
     gridTemplateColumns: "1fr",
     alignItems: "center",
@@ -31,35 +37,91 @@ export const PersonalTrainer: React.FC<PersonalTrainerProps> = ({
   imageUrl,
   features,
   footerText,
-}) => (
-  <Grid>
-    <Box
+}) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  return (
+    <Grid
       sx={{
-        display: "flex",
-        justifyContent: "center", 
-        alignItems: "flex-start",
-        gap: 0, 
-        width: "100%",
+        px: isMobile ? 2 : 0,
+        py: isMobile ? 2 : 4,
+        overflowX: "hidden",
       }}
     >
-      <Box sx={{ position: "relative", maxWidth: 550, width: "100%" }}>
-        <Box sx={{ position: "absolute", top: -1, left: 16, zIndex: 2 }}>
-          <NameTitle>{name}</NameTitle>
-          <SubTitle>{role}</SubTitle>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row", 
+          justifyContent: "center",
+          alignItems: isMobile ? "center" : "flex-start",
+          gap: isMobile ? 2 : 0,
+          width: "100%",
+        }}
+      >
+        {/* IMAGE */}
+        <Box
+          sx={{
+            position: "relative",
+            width: isMobile ? "100%" : "100%",
+            maxWidth: isMobile ? "100%" : 550,
+            mb: isMobile ? 2 : 0,
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              top: 8,
+              left: 16,
+              zIndex: 2,
+            }}
+          >
+            <NameTitle sx={{ fontSize: isMobile ? "1.5rem" : "2rem" }}>
+              {name}
+            </NameTitle>
+            <SubTitle sx={{ fontSize: isMobile ? "1rem" : "1.2rem" }}>
+              {role}
+            </SubTitle>
+          </Box>
+
+          <RoundedImage4>
+            <img
+              src={imageUrl}
+              alt={name}
+              style={{
+                width: "100%",
+                height: "auto",
+                display: "block",
+                objectFit: "cover",
+              }}
+            />
+          </RoundedImage4>
         </Box>
 
-        <RoundedImage4>
-          <img src={imageUrl} alt={name} />
-        </RoundedImage4>
+        {/* FEATURES */}
+        <Box
+          sx={{
+            width: isMobile ? "100%" : "auto",
+            maxWidth: isMobile ? "100%" : "650px",
+          }}
+        >
+          <FeatureList features={features} />
+        </Box>
       </Box>
 
-      <FeatureList features={features} />
-    </Box>
-
-    <Typography sx={{ mt: 2, fontSize: 25, textAlign: "center" }}>
-      {footerText}
-    </Typography>
-  </Grid>
-);
+      {/* FOOTER */}
+      <Typography
+        sx={{
+          mt: 2,
+          fontSize: isMobile ? 18 : 25,
+          textAlign: "center",
+          px: 2,
+        }}
+      >
+        {footerText}
+      </Typography>
+    </Grid>
+  );
+};
 
 export default PersonalTrainer;

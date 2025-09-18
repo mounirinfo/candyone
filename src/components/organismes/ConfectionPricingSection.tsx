@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
-import { Box, styled } from "@mui/material";
+import { Box, styled, useTheme, useMediaQuery } from "@mui/material";
 import OfferCardPop from "@/components/molecules/OfferCard";
+import CandyOne from "@/components/atoms/CandyOne"; // ✅ ton titre stylisé
 
 interface ConfectionPricingSectionProps {
   onSelectPlan: (planId: string) => void;
@@ -11,14 +14,14 @@ const SectionRoot = styled(Box)(({ theme }) => ({
   display: "grid",
   gridTemplateColumns: "1fr",
   gap: theme.spacing(4),
-  [theme.breakpoints.up("md")]: {
-    gridTemplateColumns: "1fr 1fr",
-    alignItems: "center",
-  },
   marginTop: theme.spacing(6),
   background: "#f8f4f4",
   padding: theme.spacing(4),
   borderRadius: theme.spacing(2),
+  [theme.breakpoints.up("md")]: {
+    gridTemplateColumns: "1fr 1fr",
+    alignItems: "center",
+  },
 }));
 
 const CardsColumn = styled(Box)(({ theme }) => ({
@@ -48,6 +51,9 @@ const ConfectionPricingSection: React.FC<ConfectionPricingSectionProps> = ({
   const [formules, setFormules] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   React.useEffect(() => {
     const fetchFormules = async () => {
       try {
@@ -72,7 +78,22 @@ const ConfectionPricingSection: React.FC<ConfectionPricingSectionProps> = ({
 
   return (
     <SectionRoot>
-      <CardsColumn>
+      {/* ✅ Titre affiché uniquement sur mobile, légèrement décalé à gauche */}
+      {isMobile && (
+        <Box
+          sx={{
+            gridColumn: "1 / -1",
+            textAlign: "left", // aligné à gauche
+            ml: 2, // petit décalage
+            mb: 2,
+          }}
+        >
+          <CandyOne sx={{ fontSize: 50 }}>Les confiseries</CandyOne>
+        </Box>
+      )}
+
+      {/* ✅ Cartes (avancées un peu à gauche en mobile) */}
+      <CardsColumn sx={isMobile ? { alignItems: "flex-start", ml: 2 } : {}}>
         {formules.map((f) => (
           <OfferCardPop
             key={f.id}
@@ -89,14 +110,17 @@ const ConfectionPricingSection: React.FC<ConfectionPricingSectionProps> = ({
         ))}
       </CardsColumn>
 
-      <ImageContainer>
-        <Box
-          component="img"
-          src="/silhouette.png"
-          alt="Illustration"
-          sx={{ maxWidth: "70%", height: "auto", marginLeft: "20px" }}
-        />
-      </ImageContainer>
+      {/* ✅ Image masquée sur mobile */}
+      {!isMobile && (
+        <ImageContainer>
+          <Box
+            component="img"
+            src="/silhouette.png"
+            alt="Illustration"
+            sx={{ maxWidth: "70%", height: "auto", marginLeft: "20px" }}
+          />
+        </ImageContainer>
+      )}
     </SectionRoot>
   );
 };

@@ -8,67 +8,67 @@ const Hero = styled(Box, {
   shouldForwardProp: (prop) => prop !== "bg",
 })<{ bg: string }>(({ theme, bg }) => ({
   position: "relative",
-  minHeight: "auto", 
-  flexDirection: "column", 
-    alignItems: "center",
-  padding: theme.spacing(5), 
+  minHeight: "auto",
+  flexDirection: "column",
+  alignItems: "center",
+  padding: theme.spacing(5),
   backgroundImage: `linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url(${bg})`,
   backgroundSize: "cover",
   backgroundPosition: "center",
   overflow: "hidden",
   [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(3),
-    minHeight: "70vh", 
+    minHeight: "70vh",
   },
   [theme.breakpoints.up("md")]: {
-    minHeight: "100vh", 
+    minHeight: "100vh",
     padding: theme.spacing(4),
-    display: "grid", 
+    display: "grid",
     placeItems: "center",
   },
 }));
 
 const CardsGrid = styled(Box)(({ theme }) => ({
   width: "100%",
-  maxWidth: "100%", 
+  maxWidth: "100%",
   display: "flex",
   flexDirection: "column",
-  gap: theme.spacing(2), 
+  gap: theme.spacing(4), 
   [theme.breakpoints.up("sm")]: {
-    maxWidth: 800, 
-    gap: theme.spacing(3),
+    maxWidth: 800,
+    gap: theme.spacing(2), 
   },
   [theme.breakpoints.up("md")]: {
-    maxWidth: 1200, 
-    display: "grid", 
+    maxWidth: 1200,
+    display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: theme.spacing(4),
+    gap: theme.spacing(3),
   },
 }));
 
 const PartnerBar = styled(Box)(({ theme }) => ({
-  position: "relative", 
+  position: "relative",
   width: "100%",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
   gap: theme.spacing(1),
-  padding: theme.spacing(1.5, 2), 
+  padding: theme.spacing(1.5, 2),
   color: theme.palette.common.white,
   fontWeight: 800,
   letterSpacing: 1,
   textTransform: "uppercase",
-  textAlign: "center", 
+  textAlign: "center",
   [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(2, 2.5),
   },
   [theme.breakpoints.up("md")]: {
-    position: "absolute", 
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
     padding: theme.spacing(2.5, 3),
-    textAlign: "left", 
+    textAlign: "left",
   },
 }));
 
@@ -84,7 +84,7 @@ export type ClubSelectorHeroProps = {
   backgroundUrl: string;
   clubs: Club[];
   partnerNote?: string;
-  sx?: any; 
+  sx?: any;
 };
 
 export const ClubSelectorHero: React.FC<ClubSelectorHeroProps> = ({
@@ -107,35 +107,33 @@ export const ClubSelectorHero: React.FC<ClubSelectorHeroProps> = ({
             address2={c.address2}
             accent={c.accent}
             onClick={c.onClick}
-           
           />
         ))}
       </CardsGrid>
 
-     {partnerNote && (
-  <PartnerBar>
-    <Typography
-      component="span"
-      sx={{
-        fontSize: { xs: "0.8rem", sm: "0.9rem", md: "1rem" },
-        fontWeight: 700,
-      }}
-    >
-      Partenaire officiel
-    </Typography>
+      {partnerNote && (
+        <PartnerBar>
+          <Typography
+            component="span"
+            sx={{
+              fontSize: { xs: "0.8rem", sm: "0.9rem", md: "1rem" },
+              fontWeight: 700,
+            }}
+          >
+            Partenaire officiel
+          </Typography>
 
-    <Box
-      component="img"
-      src="/basicfit.svg"   
-      alt="BasicFit"
-      sx={{
-        height: { xs: 24, sm: 32, md: 40 },
-        objectFit: "contain",
-      }}
-    />
-  </PartnerBar>
-)}
-
+          <Box
+            component="img"
+            src="/basicfit.svg"
+            alt="BasicFit"
+            sx={{
+              height: { xs: 24, sm: 32, md: 40 },
+              objectFit: "contain",
+            }}
+          />
+        </PartnerBar>
+      )}
     </Hero>
   );
 };
