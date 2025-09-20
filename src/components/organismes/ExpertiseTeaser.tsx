@@ -44,7 +44,7 @@ export const ExpertiseTeaser: React.FC<ExpertiseTeaserProps> = ({
   onCta,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // ✅ détecte mobile
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); 
 
   return (
     <Panel>
@@ -55,7 +55,15 @@ export const ExpertiseTeaser: React.FC<ExpertiseTeaserProps> = ({
           </RoundedImage3>
         )}
 
-        <Stack spacing={2} alignItems={{ xs: "center", md: "flex-start" }} textAlign={{ xs: "center", md: "left" }}>
+        <Stack
+          spacing={2}
+          alignItems={{ xs: "flex-start", md: "flex-start" }}
+          textAlign={{ xs: "left", md: "left" }}
+          sx={{
+            pl: { xs: 0, md: 0 },      
+            ml: { xs: "-30px", md: 0 }, 
+          }}
+        >
           <HugeTitle>{title}</HugeTitle>
           <SoftSubtitle>{subtitle}</SoftSubtitle>
           <ExpertiseCard {...card} />

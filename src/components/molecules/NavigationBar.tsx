@@ -151,7 +151,7 @@ export default function NavigationBar() {
                     SE CONNECTER
                   </Button>
                 </Link>
-                <Link href="/signup" passHref>
+                <Link href="/checkout" passHref>
                   <Button
                     variant="contained"
                     sx={{

@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import Header from "@/components/organismes/Header"; 
-import Footer from "@/components/organismes/Footer"; 
+import Header from "@/components/organismes/Header";
+import Footer from "@/components/organismes/Footer";
 import { CssBaseline, Container, Box } from "@mui/material";
 import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
 import PersonIcon from "@mui/icons-material/Person";
@@ -17,11 +17,30 @@ import PersonalTrainer from "@/components/organismes/PersonalTrainer";
 import DiscoverCandyOneHero from "@/components/organismes/DiscoverCandyOneHero";
 import RecipeSection from "@/components/organismes/RecipeSection";
 import ContactFormSection from "@/components/organismes/ContactFormSection";
-import ConfectionPricingSection from "@/components/organismes/ConfectionPricingSection"
+import ConfectionPricingSection from "@/components/organismes/ConfectionPricingSection";
+
 export default function HomePage() {
+  // Fonction appelée à la soumission du formulaire
+  const handleContactSubmit = async (values: Record<string, string>) => {
+    try {
+      const res = await fetch("/api/callbacks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+
+      if (!res.ok) throw new Error("Erreur serveur");
+
+      alert("✅ Votre demande a bien été envoyée !");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Une erreur est survenue.");
+    }
+  };
+
   return (
     <>
-      <CssBaseline /> 
+      <CssBaseline />
       <Header />
 
       <DiscoverCandyOneHero
@@ -29,9 +48,10 @@ export default function HomePage() {
         onReserveHref="/checkout"
       />
 
-      <ConfectionPricingSection onSelectPlan={function (planId: string): void {
-        throw new Error("Function not implemented.");
-      } } selectedPlan={null} />
+      <ConfectionPricingSection
+        onSelectPlan={(planId: string) => console.log("Plan choisi:", planId)}
+        selectedPlan={null}
+      />
 
       <ClubSelectorHero
         backgroundUrl="salle1.jpg"
@@ -54,6 +74,7 @@ export default function HomePage() {
         ]}
       />
 
+      {/* autres sections ClubSelectorHero */}
       <ClubSelectorHero
         backgroundUrl="salle2.jpg"
         partnerNote="PARTENAIRE OFFICIEL BASIC-FIT"
@@ -121,42 +142,33 @@ export default function HomePage() {
         leftImageUrl="/bonbon.png"
         rightImageUrl="/party.png"
         bullets={[
-          { strong: "Coaching personnalisé : jusqu’à 60 séances* adaptées à ton rythme", sub: "Des séances tout au long de l’année" },
-          { strong: "Plan d’entraînement individualisé", sub: "Un programme évolutif, mis à jour chaque mois" },
-          { strong: "Rendez-vous avec ton coach expert dédié", sub: "Des suivis réguliers pour avancer sereinement" },
-          { strong: "Analyse corporel : Muscle ou graisse ?", sub: "Analyse précise pour optimiser tes résultats." },
+          {
+            strong: "Coaching personnalisé : jusqu’à 60 séances* adaptées à ton rythme",
+            sub: "Des séances tout au long de l’année",
+          },
+          {
+            strong: "Plan d’entraînement individualisé",
+            sub: "Un programme évolutif, mis à jour chaque mois",
+          },
+          {
+            strong: "Rendez-vous avec ton coach expert dédié",
+            sub: "Des suivis réguliers pour avancer sereinement",
+          },
+          {
+            strong: "Analyse corporel : Muscle ou graisse ?",
+            sub: "Analyse précise pour optimiser tes résultats.",
+          },
         ]}
       />
 
+      {/* Témoignages */}
       <GourmetTestimonial
         imageUrl="avis1.png"
         name="Maëlys Sbg"
         rating={5}
         paragraphs={[
-          "Pendant 6 mois Eduin m’a accompagné dans mes entraînements que ce soit pour le haut du corps comme le bas du corps.",
-          "Merci pour ton aide et l’évolution musculaire que j’ai pu recevoir grâce à ton coaching.",
-          "Merci pour tes disponibilités et ton adaptabilité.",
-        ]}
-        bgColor="#ddf9ff"
-      />
-      <GourmetTestimonial
-        imageUrl="avis2.png"
-        name="Maëlys Sbg"
-        rating={5}
-        paragraphs={[
-          "Pendant 6 mois Eduin m’a accompagné dans mes entraînements que ce soit pour le haut du corps comme le bas du corps.",
-          "Merci pour ton aide et l’évolution musculaire que j’ai pu recevoir grâce à ton coaching.",
-          "Merci pour tes disponibilités et ton adaptabilité.",
-        ]}
-        bgColor="#f9cfe7"
-      />
-      <GourmetTestimonial
-        imageUrl="avis3.png"
-        name="Maëlys Sbg"
-        rating={5}
-        paragraphs={[
-          "Pendant 6 mois Eduin m’a accompagné dans mes entraînements que ce soit pour le haut du corps comme le bas du corps.",
-          "Merci pour ton aide et l’évolution musculaire que j’ai pu recevoir grâce à ton coaching.",
+          "Pendant 6 mois Eduin m’a accompagné dans mes entraînements...",
+          "Merci pour ton aide et l’évolution musculaire...",
           "Merci pour tes disponibilités et ton adaptabilité.",
         ]}
         bgColor="#ddf9ff"
@@ -185,20 +197,14 @@ export default function HomePage() {
         onCta={() => alert("Expertisable – CTA")}
       />
 
+      {/* Personal Trainers */}
       <Box mt={4}>
         <PersonalTrainer
           name="GLORIA"
           role="PERSONAL TRAINER"
           imageUrl="GLORIA.jpg"
-          features={[
-            "Perte de poids",
-            "Renforcement musculaire",
-            "Remise en forme",
-            "Anglais – Français – LSF",
-            "Coach diplômé d’état (BPJEPS)",
-            "Disponible sur Ermont & Pierrelaye",
-          ]}
-          footerText="Découvrez Gloria : Une personnalité pétillante qui saura vous orienter et vous permettra d’atteindre tout vos objectifs."
+          features={["Perte de poids", "Renforcement musculaire", "Remise en forme"]}
+          footerText="Découvrez Gloria : ..."
         />
       </Box>
 
@@ -207,15 +213,8 @@ export default function HomePage() {
           name="EDUIN"
           role="PERSONAL TRAINER"
           imageUrl="EDUINE.jpg"
-          features={[
-            "Perte de poids",
-            "Renforcement musculaire",
-            "Remise en forme",
-            "Anglais – Français – LSF",
-            "Coach diplômé d’état (BPJEPS)",
-            "Disponible sur Ermont & Pierrelaye",
-          ]}
-          footerText="Découvrez Gloria : Une personnalité pétillante qui saura vous orienter et vous permettra d’atteindre tout vos objectifs."
+          features={["Perte de poids", "Renforcement musculaire", "Remise en forme"]}
+          footerText="Découvrez Eduin : ..."
         />
       </Box>
 
@@ -224,36 +223,31 @@ export default function HomePage() {
           name="QUENTIN"
           role="PERSONAL TRAINER"
           imageUrl="QUENTIN.jpg"
-          features={[
-            "Perte de poids",
-            "Renforcement musculaire",
-            "Remise en forme",
-            "Anglais – Français – LSF",
-            " Coach diplomé d’état (CQP)",
-            "Disponible sur Ermont & Pierrelaye",
-          ]}
-          footerText="Découvrez Gloria : Une personnalité pétillante qui saura vous orienter et vous permettra d’atteindre tout vos objectifs."
+          features={["Perte de poids", "Renforcement musculaire", "Remise en forme"]}
+          footerText="Découvrez Quentin : ..."
         />
       </Box>
 
+      {/* Recette */}
       <RecipeSection
         imageUrl="recette.png"
         features={[
-          { icon: <CheckBoxOutlinedIcon />, title: "Une confiserie sur mesure", desc: "Un programme sportif sur-mesure qui répond à votre objectif." },
+          { icon: <CheckBoxOutlinedIcon />, title: "Une confiserie sur mesure", desc: "..." },
           { icon: <PersonIcon />, title: "Confiseur individuel" },
-          { icon: <HandshakeIcon />, title: "Un dosage unique", desc: "Formule adaptée aux personnes à mobilité réduite ou en rééducation." },
-          { icon: <WhatshotIcon />, title: "Une cuisson parfaite", desc: "Des résultats à portée de main." },
+          { icon: <HandshakeIcon />, title: "Un dosage unique", desc: "..." },
+          { icon: <WhatshotIcon />, title: "Une cuisson parfaite", desc: "..." },
           { icon: <SchoolIcon />, title: "Des experts" },
         ]}
       />
 
+      {/* Formulaire de contact */}
       <ContactFormSection
-        imageUrl="formulaire.png"
-        onSubmit={(values) => alert(JSON.stringify(values, null, 2))}
-      />
+  imageUrl="formulaire.png"
+  currentUser={null}
+/>
 
-      <Container maxWidth="lg" sx={{ mt: 4, minHeight: "70vh" }}>
-      </Container>
+
+      <Container maxWidth="lg" sx={{ mt: 4, minHeight: "70vh" }} />
 
       <Footer />
     </>

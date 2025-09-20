@@ -55,10 +55,10 @@ const Footer: React.FC = () => {
           </Typography>
           {[
             { href: "/", label: "Home" },
-            { href: "/about", label: "About Us" },
-            { href: "/pricing", label: "Pricing" },
-            { href: "/schedule", label: "Schedule" },
-            { href: "/contact", label: "Contact" },
+            { href: "/", label: "About Us" },
+            { href: "/", label: "Pricing" },
+            { href: "/", label: "Schedule" },
+            { href: "/", label: "Contact" },
           ].map((item, i) => (
             <Link key={i} href={item.href} color="inherit" underline="none" sx={{ mb: 1, fontSize: "1.1rem", opacity: 0.9, "&:hover": { opacity: 1, color: "#fb9ef5", textDecoration: "underline" } }}>
               {item.label}

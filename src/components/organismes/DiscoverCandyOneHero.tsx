@@ -26,10 +26,12 @@ const Grid = styled(Box, {
   gap: theme.spacing(3),
   gridTemplateColumns: "1fr",
   textAlign: "center",
+  paddingTop: theme.spacing(0), 
   [theme.breakpoints.up("md")]: {
     gridTemplateColumns: "1.1fr 1fr",
     alignItems: "center",
     textAlign: "left",
+    paddingTop: theme.spacing(4),
   },
 }));
 
