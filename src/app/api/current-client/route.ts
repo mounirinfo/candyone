@@ -1,29 +1,46 @@
-import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export async function GET() {
-  const supabase = createServerSupabaseClient();
+  try {
+    const supabase = createServerSupabaseClient();
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("sb-access-token")?.value;
 
-  // récupérer l'utilisateur connecté
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+    if (!accessToken) {
+      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    }
 
-  if (authError || !user) {
-    return NextResponse.json({ client: null }, { status: 200 });
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(accessToken);
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: "Utilisateur non trouvé" },
+        { status: 404 }
+      );
+    }
+
+    // 🔹 Récupérer le profil client lié
+    const { data: client, error: clientError } = await supabase
+      .from("client")
+      .select("id, prenom, nom, email, telephone")
+      .eq("auth_id", user.id)
+      .single();
+
+    if (clientError || !client) {
+      return NextResponse.json(
+        { error: "Profil client introuvable" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ client });
+  } catch (error) {
+    console.error("Erreur API current-client:", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
-
-  // retrouver le client lié à cet utilisateur
-  const { data: client, error } = await supabase
-    .from("client")
-    .select("id, prenom, nom, email, telephone")
-    .eq("auth_id", user.id)
-    .single();
-
-  if (error || !client) {
-    return NextResponse.json({ client: null }, { status: 200 });
-  }
-
-  return NextResponse.json({ client });
 }

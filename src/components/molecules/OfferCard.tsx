@@ -40,6 +40,8 @@ const FeaturesBox = styled(Box)(() => ({
   flexDirection: "column",
   gap: "12px",
   fontSize: "1rem",
+  flexGrow: 1, 
+  width: "100%",
 }));
 
 const FeatureItem = styled(Box)(() => ({
@@ -73,7 +75,7 @@ interface OfferCardPopProps {
   ribbonSubText: string;
   features: string[];
   buttonText?: string;
-  onClick: () => void; // Make required
+  onClick: () => void; 
   selected?: boolean;
 }
 
@@ -101,13 +103,22 @@ const OfferCardPop: React.FC<OfferCardPopProps> = ({
         position: "relative",
         cursor: "pointer",
         transition: "all 0.3s",
+        display: "flex", 
+        flexDirection: "column",
         ":hover": {
           transform: "scale(1.03)",
           boxShadow: "0 8px 20px rgba(251, 152, 246, 0.3)",
         },
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 1,
+        }}
+      >
         <Box>
           <PriceText>{price}</PriceText>
           <PeriodText>{period}</PeriodText>
@@ -120,12 +131,22 @@ const OfferCardPop: React.FC<OfferCardPopProps> = ({
         />
       </Box>
 
-      <Stack spacing={1} alignItems="center" sx={{ width: "100%" }}>
+      <Stack
+        spacing={2}
+        alignItems="center"
+        sx={{ flexGrow: 1, width: "100%" }}
+      >
+        {/* Badge */}
         <Ribbon selected={selected}>
           {ribbonText}
           <Typography
             component="span"
-            sx={{ fontSize: "0.9rem", opacity: 0.8, display: "block", color: "#fff" }}
+            sx={{
+              fontSize: "0.9rem",
+              opacity: 0.8,
+              display: "block",
+              color: "#fff",
+            }}
           >
             {ribbonSubText}
           </Typography>

@@ -1,3 +1,4 @@
+// app/api/callbacks/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
@@ -5,7 +6,6 @@ export async function POST(req: Request) {
   const supabase = createServerSupabaseClient();
   const body = await req.json();
 
-  // vérifier si un utilisateur est connecté
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         telephone: body.telephone,
         email: body.email,
         message: body.message,
-        notes_interne: body.notes_interne, // contient le coach choisi
+        notes_interne: body.notes_interne, 
       },
     ])
     .select()
