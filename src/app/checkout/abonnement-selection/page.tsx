@@ -9,7 +9,6 @@ import {
   Step,
   StepLabel,
   Button,
-  styled,
 } from "@mui/material";
 import StarsIcon from "@mui/icons-material/Stars";
 
@@ -21,19 +20,6 @@ import { useCheckoutStore } from "@/stores/useCheckoutStore";
 
 const primaryColor = "#FB98F6";
 const secondaryColor = "#2D3748";
-
-const GradientButton = styled(Button)(() => ({
-  background: `linear-gradient(45deg, ${primaryColor} 0%, #F06292 100%)`,
-  border: 0,
-  borderRadius: 25,
-  color: "white",
-  padding: "12px 40px",
-  transition: "all 0.3s ease",
-  "&:hover": {
-    transform: "scale(1.05)",
-    boxShadow: "0 8px 16px rgba(251, 152, 246, 0.3)",
-  },
-}));
 
 const steps: string[] = [
   "Choix de la salle",
@@ -48,15 +34,16 @@ export default function AbonnementSelection(): JSX.Element {
 
   const selectedPlan = data.abonnementId ?? null;
 
-  const handleNext = () => {
-    if (!selectedPlan) return;
-    setStep(3);
-    router.push("/checkout/option-selection");
-  };
-
   const handleBack = () => {
     setStep(1);
     router.push("/checkout/club-selection");
+  };
+
+  // 👉 Dès qu’on choisit un abonnement → avancer automatiquement
+  const handleSelectPlan = (id: string) => {
+    updateData({ abonnementId: id });
+    setStep(3);
+    router.push("/checkout/option-selection");
   };
 
   return (
@@ -90,6 +77,7 @@ export default function AbonnementSelection(): JSX.Element {
             backdropFilter: "blur(12px)",
           }}
         >
+          {/* Stepper */}
           <Stepper activeStep={step - 1} alternativeLabel sx={{ mb: 6 }}>
             {steps.map((label) => (
               <Step key={label}>
@@ -108,6 +96,7 @@ export default function AbonnementSelection(): JSX.Element {
             ))}
           </Stepper>
 
+          {/* Titre */}
           <Box textAlign="center" mb={6}>
             <Typography
               variant="h3"
@@ -134,19 +123,18 @@ export default function AbonnementSelection(): JSX.Element {
             </Typography>
           </Box>
 
-         <ConfectionPricingSection
-  onSelectPlan={(id: string) => updateData({ abonnementId: id })}
-  selectedPlan={selectedPlan}
-/>
+          {/* Section prix avec redirection directe */}
+          <ConfectionPricingSection
+            onSelectPlan={handleSelectPlan}
+            selectedPlan={selectedPlan}
+          />
 
+          {/* Boutons */}
           <Box
             sx={{
               mt: 6,
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 2,
+              justifyContent: "flex-start",
             }}
           >
             <Button
@@ -166,19 +154,6 @@ export default function AbonnementSelection(): JSX.Element {
             >
               ← Retour
             </Button>
-            <GradientButton
-              onClick={handleNext}
-              aria-label="Continuer à l'étape suivante"
-              disabled={!selectedPlan}
-              sx={{
-                px: 6,
-                fontSize: "1.1rem",
-                fontWeight: 700,
-              }}
-            >
-              Continuer
-              <StarsIcon sx={{ ml: 1.5, fontSize: "1.2rem" }} />
-            </GradientButton>
           </Box>
         </Container>
       </Box>

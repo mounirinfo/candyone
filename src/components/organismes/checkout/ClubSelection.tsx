@@ -59,8 +59,11 @@ const ClubSelection = () => {
     fetchClubs();
   }, []);
 
+  // 👉 Dès qu’on clique sur un club → passage direct à l’étape suivante
   const handleClubSelect = (clubId: string) => {
     updateData({ clubId });
+    setStep(2);
+    router.push("/checkout/abonnement-selection");
   };
 
   const handleContinue = () => {
@@ -116,15 +119,16 @@ const ClubSelection = () => {
               backgroundUrl="salle4.jpg"
               partnerNote="PARTENAIRE OFFICIEL BASIC-FIT"
               clubs={clubs.map((club) => ({
-               id: club.id,          // ← ID exact de la DB
-                address1: club.nom, 
-                address2: "", 
-                accent: "pink", 
+                id: club.id,
+                address1: club.nom,
+                address2: "",
+                accent: "pink",
                 onClick: () => handleClubSelect(club.id),
               }))}
             />
           )}
 
+          {/* Bouton toujours présent, mais plus utile */}
           <Box
             sx={{
               mt: 6,
@@ -135,23 +139,7 @@ const ClubSelection = () => {
               zIndex: 1,
             }}
           >
-            <GradientButton
-              onClick={handleContinue}
-              disabled={!selectedClub}
-              sx={{
-                fontSize: "1.1rem",
-                fontWeight: 700,
-                "&.Mui-disabled": {
-                  background: "#eee",
-                  color: "#999",
-                },
-              }}
-            >
-              Continuer vers l'abonnement
-              <Box component="span" sx={{ ml: 1, fontSize: "1.2rem" }}>
-                ➔
-              </Box>
-            </GradientButton>
+            
           </Box>
         </Container>
       </Box>
