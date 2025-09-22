@@ -267,7 +267,7 @@ export default function NavigationBar() {
                   </Link>
                 </ListItem>
                 <ListItem disablePadding>
-                  <Link href="/signup" passHref>
+                  <Link href="/checkout" passHref>
                     <ListItemButton
                       sx={{ mt: 2, py: 1.5, backgroundColor: "#ff66cc" }}
                     >

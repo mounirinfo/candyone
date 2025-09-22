@@ -26,7 +26,7 @@ const Grid = styled(Box, {
   gap: theme.spacing(3),
   gridTemplateColumns: "1fr",
   textAlign: "center",
-  paddingTop: theme.spacing(0), 
+  paddingTop: theme.spacing(0),
   [theme.breakpoints.up("md")]: {
     gridTemplateColumns: "1.1fr 1fr",
     alignItems: "center",
@@ -50,12 +50,25 @@ export const DiscoverCandyOneHero: React.FC<DiscoverCandyOneHeroProps> = ({
       <Stack spacing={2}>
         <HeroHeader title="DÉCOUVREZ" subtitle="Candy One" />
         <ScriptPrice>A partir de 9,99€ / 4 semaines</ScriptPrice>
+
         {onReserveHref ? (
-          <ReserveBtn onClick={() => router.push(onReserveHref)}>
+          <ReserveBtn
+            onClick={() => router.push(onReserveHref)}
+            style={{
+              marginLeft: isMobile ? "-60px" : 0, 
+            }}
+          >
             RÉSERVEZ
           </ReserveBtn>
         ) : (
-          <ReserveBtn onClick={onReserve}>RÉSERVEZ</ReserveBtn>
+          <ReserveBtn
+            onClick={onReserve}
+            style={{
+              marginLeft: isMobile ? "-20px" : 0,
+            }}
+          >
+            RÉSERVEZ
+          </ReserveBtn>
         )}
       </Stack>
 

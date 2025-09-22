@@ -54,69 +54,6 @@ export default function HomePage() {
         ]}
       />
 
-      <ClubSelectorHero
-        backgroundUrl="salle2.jpg"
-        partnerNote="PARTENAIRE OFFICIEL BASIC-FIT"
-        clubs={[
-          {
-            id: "ermont-1",
-            address1: "1 AVENUE GEORGES POMPIDOU",
-            address2: "95120 ERMONT",
-            accent: "pink",
-            onClick: () => alert("Club Ermont Pompidou"),
-          },
-          {
-            id: "ermont-2",
-            address1: "258 BOULEVARD DU HAVRE",
-            address2: "95120 ERMONT",
-            accent: "blue",
-            onClick: () => alert("Club Ermont Havre"),
-          },
-        ]}
-      />
-
-      <ClubSelectorHero
-        backgroundUrl="salle3.jpg"
-        partnerNote="PARTENAIRE OFFICIEL BASIC-FIT"
-        clubs={[
-          {
-            id: "ermont-1",
-            address1: "1 AVENUE GEORGES POMPIDOU",
-            address2: "95120 ERMONT",
-            accent: "pink",
-            onClick: () => alert("Club Ermont Pompidou"),
-          },
-          {
-            id: "ermont-2",
-            address1: "258 BOULEVARD DU HAVRE",
-            address2: "95120 ERMONT",
-            accent: "blue",
-            onClick: () => alert("Club Ermont Havre"),
-          },
-        ]}
-      />
-
-      <ClubSelectorHero
-        backgroundUrl="salle4.jpg"
-        partnerNote="PARTENAIRE OFFICIEL BASIC-FIT"
-        clubs={[
-          {
-            id: "ermont-1",
-            address1: "1 AVENUE GEORGES POMPIDOU",
-            address2: "95120 ERMONT",
-            accent: "pink",
-            onClick: () => alert("Club Ermont Pompidou"),
-          },
-          {
-            id: "ermont-2",
-            address1: "258 BOULEVARD DU HAVRE",
-            address2: "95120 ERMONT",
-            accent: "blue",
-            onClick: () => alert("Club Ermont Havre"),
-          },
-        ]}
-      />
-
       <BonusBasicFit
         leftImageUrl="/bonbon.png"
         rightImageUrl="/party.png"

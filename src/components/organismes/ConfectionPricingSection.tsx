@@ -83,16 +83,15 @@ const ConfectionPricingSection: React.FC<ConfectionPricingSectionProps> = ({
         <Box
           sx={{
             gridColumn: "1 / -1",
-            textAlign: "left", // aligné à gauche
-            ml: 2, // petit décalage
+            textAlign: "left", 
+            ml: 2, 
             mb: 2,
           }}
         >
-          <CandyOne sx={{ fontSize: 50 }}>Les confiseries</CandyOne>
+          <CandyOne sx={{ fontSize: 30 }}>Les confiseries</CandyOne>
         </Box>
       )}
 
-      {/* ✅ Cartes (avancées un peu à gauche en mobile) */}
       <CardsColumn sx={isMobile ? { alignItems: "flex-start", ml: 2 } : {}}>
         {formules.map((f) => (
           <OfferCardPop
