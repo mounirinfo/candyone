@@ -26,12 +26,8 @@ import {
   styled,
 } from "@mui/material";
 import {
-  Person as UserIcon,
   Email as MailIcon,
   Phone as PhoneIcon,
-  Home as HomeIcon,
-  LocationOn as MapPinIcon,
-  CalendarToday as CalendarIcon,
   Lock as LockIcon,
   Security as ShieldIcon,
   ArrowBack as ArrowBackIcon,
@@ -44,6 +40,7 @@ import { useCheckoutStore } from "@/stores/useCheckoutStore";
 const primaryColor = "#FB98F6";
 const secondaryColor = "#2D3748";
 
+// ✅ Schéma de validation stricte
 const schema = yup.object().shape({
   email: yup.string().email("Email invalide").required("L'email est requis"),
   password: yup.string().min(8, "Minimum 8 caractères").required("Mot de passe requis"),
@@ -53,7 +50,11 @@ const schema = yup.object().shape({
     .required("Confirmation requise"),
   nom: yup.string().required("Le nom est requis"),
   prenom: yup.string().required("Le prénom est requis"),
-  telephone: yup.string().matches(/^[0-9]+$/, "Numéro invalide").min(10, "Numéro trop court").required("Le téléphone est requis"),
+  telephone: yup
+    .string()
+    .matches(/^[0-9]+$/, "Numéro invalide")
+    .min(10, "Numéro trop court")
+    .required("Le téléphone est requis"),
   anniversaire: yup.string().required("La date de naissance est requise"),
   codePostal: yup.string().required("Le code postal est requis"),
   numero: yup.string().required("Le numéro de rue est requis"),
@@ -92,9 +93,10 @@ export default function CoordonneesPage() {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm({
     resolver: yupResolver(schema),
+    mode: "onChange", // ✅ valide à chaque saisie
     defaultValues: {
       acceptMarketing: false,
       acceptContact: false,
@@ -102,47 +104,35 @@ export default function CoordonneesPage() {
     },
   });
 
- const onSubmit = async (formData: any) => {
-  setIsLoading(true);
-  console.log("📤 Données envoyées :", formData);
+  const onSubmit = async (formData: any) => {
+    setIsLoading(true);
+    updateData({ coordonnees: formData });
+    const fullState = useCheckoutStore.getState();
 
-  // Met à jour le store Zustand
-  updateData({ coordonnees: formData });
-  const fullState = useCheckoutStore.getState();
-console.log("📦 fullState envoyé :", fullState);
-console.log("📨 données envoyées :", fullState.data.coordonnees);
-  try {
-  const res = await fetch("/api/checkout/submit", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify(fullState.data), 
-});
+    try {
+      const res = await fetch("/api/checkout/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fullState.data),
+      });
 
+      const result = await res.json();
 
-    const result = await res.json();
+      if (!res.ok) {
+        alert(result.error || "Erreur lors de l'inscription");
+        return;
+      }
 
-    if (!res.ok) {
-      console.error("❌ Erreur API :", result);
-      alert(result.error || "Erreur lors de l'inscription");
-      return;
+      router.push("/inscription/success");
+    } catch (error) {
+      alert("Impossible de contacter le serveur");
+    } finally {
+      setIsLoading(false);
     }
-
-    console.log("✅ Succès API :", result);
-
-    router.push("/inscription/success");
-  } catch (error) {
-    console.error("❌ Erreur réseau :", error);
-    alert("Impossible de contacter le serveur");
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   const handleBack = () => {
-    setStep(2); 
+    setStep(2);
     router.back();
   };
 
@@ -200,7 +190,7 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
               </Stepper>
 
               <Box sx={{ textAlign: "center", mb: 4 }}>
-                <Typography variant="h4" component="h1" fontWeight="bold" color="text.primary" gutterBottom>
+                <Typography variant="h4" fontWeight="bold" gutterBottom>
                   Inscription
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
@@ -211,6 +201,7 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
               {/* FORM */}
               <form onSubmit={handleSubmit(onSubmit)}>
                 <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3 }}>
+                  {/* Colonne gauche */}
                   <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
                     <Controller
                       name="email"
@@ -218,9 +209,10 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
                       render={({ field }) => (
                         <TextField
                           {...field}
+                          required
                           fullWidth
                           type="email"
-                          label="Email"
+                          label="Email *"
                           error={!!errors.email}
                           helperText={errors.email?.message}
                           InputProps={{
@@ -239,9 +231,10 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
                       render={({ field }) => (
                         <TextField
                           {...field}
+                          required
                           fullWidth
                           type="password"
-                          label="Mot de passe"
+                          label="Mot de passe *"
                           error={!!errors.password}
                           helperText={errors.password?.message}
                           InputProps={{
@@ -260,9 +253,10 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
                       render={({ field }) => (
                         <TextField
                           {...field}
+                          required
                           fullWidth
                           type="password"
-                          label="Confirmez le mot de passe"
+                          label="Confirmez le mot de passe *"
                           error={!!errors.confirmPassword}
                           helperText={errors.confirmPassword?.message}
                           InputProps={{
@@ -279,14 +273,28 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
                       name="prenom"
                       control={control}
                       render={({ field }) => (
-                        <TextField {...field} fullWidth label="Prénom" error={!!errors.prenom} helperText={errors.prenom?.message} />
+                        <TextField
+                          {...field}
+                          required
+                          fullWidth
+                          label="Prénom *"
+                          error={!!errors.prenom}
+                          helperText={errors.prenom?.message}
+                        />
                       )}
                     />
                     <Controller
                       name="nom"
                       control={control}
                       render={({ field }) => (
-                        <TextField {...field} fullWidth label="Nom" error={!!errors.nom} helperText={errors.nom?.message} />
+                        <TextField
+                          {...field}
+                          required
+                          fullWidth
+                          label="Nom *"
+                          error={!!errors.nom}
+                          helperText={errors.nom?.message}
+                        />
                       )}
                     />
                   </Box>
@@ -297,7 +305,21 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
                       name="telephone"
                       control={control}
                       render={({ field }) => (
-                        <TextField {...field} fullWidth label="Téléphone" error={!!errors.telephone} helperText={errors.telephone?.message} />
+                        <TextField
+                          {...field}
+                          required
+                          fullWidth
+                          label="Téléphone *"
+                          error={!!errors.telephone}
+                          helperText={errors.telephone?.message}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <PhoneIcon color="primary" />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
                       )}
                     />
                     <Controller
@@ -306,9 +328,10 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
                       render={({ field }) => (
                         <TextField
                           {...field}
+                          required
                           fullWidth
                           type="date"
-                          label="Date de naissance"
+                          label="Date de naissance *"
                           InputLabelProps={{ shrink: true }}
                           error={!!errors.anniversaire}
                           helperText={errors.anniversaire?.message}
@@ -316,18 +339,74 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
                       )}
                     />
                     <Box sx={{ display: "flex", gap: 2 }}>
-                      <Controller name="numero" control={control} render={({ field }) => <TextField {...field} label="N°" />} />
-                      <Controller name="rue" control={control} render={({ field }) => <TextField {...field} label="Rue" />} />
+                      <Controller
+                        name="numero"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            required
+                            label="N° *"
+                            error={!!errors.numero}
+                            helperText={errors.numero?.message}
+                          />
+                        )}
+                      />
+                      <Controller
+                        name="rue"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            required
+                            label="Rue *"
+                            error={!!errors.rue}
+                            helperText={errors.rue?.message}
+                          />
+                        )}
+                      />
                     </Box>
                     <Box sx={{ display: "flex", gap: 2 }}>
-                      <Controller name="codePostal" control={control} render={({ field }) => <TextField {...field} label="Code Postal" />} />
-                      <Controller name="ville" control={control} render={({ field }) => <TextField {...field} label="Ville" />} />
+                      <Controller
+                        name="codePostal"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            required
+                            label="Code Postal *"
+                            error={!!errors.codePostal}
+                            helperText={errors.codePostal?.message}
+                          />
+                        )}
+                      />
+                      <Controller
+                        name="ville"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            required
+                            label="Ville *"
+                            error={!!errors.ville}
+                            helperText={errors.ville?.message}
+                          />
+                        )}
+                      />
                     </Box>
                     <Controller
                       name="genre"
                       control={control}
                       render={({ field }) => (
-                        <TextField {...field} select fullWidth label="Genre">
+                        <TextField
+                          {...field}
+                          required
+                          select
+                          fullWidth
+                          label="Genre *"
+                          error={!!errors.genre}
+                          helperText={errors.genre?.message}
+                        >
                           <MenuItem value="Homme">Homme</MenuItem>
                           <MenuItem value="Femme">Femme</MenuItem>
                           <MenuItem value="Autre">Autre</MenuItem>
@@ -344,13 +423,23 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
                   <Controller
                     name="acceptMarketing"
                     control={control}
-                    render={({ field }) => <FormControlLabel control={<Checkbox {...field} checked={field.value} />} label="J'accepte de recevoir des offres" />}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Checkbox {...field} checked={field.value} />}
+                        label="J'accepte de recevoir des offres"
+                      />
+                    )}
                   />
                   <br />
                   <Controller
                     name="acceptContact"
                     control={control}
-                    render={({ field }) => <FormControlLabel control={<Checkbox {...field} checked={field.value} />} label="J'accepte d'être contacté" />}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Checkbox {...field} checked={field.value} />}
+                        label="J'accepte d'être contacté"
+                      />
+                    )}
                   />
                 </Box>
 
@@ -359,7 +448,7 @@ console.log("📨 données envoyées :", fullState.data.coordonnees);
                   <Button variant="outlined" onClick={handleBack} startIcon={<ArrowBackIcon />}>
                     Retour
                   </Button>
-                  <GradientButton type="submit" disabled={isLoading}>
+                  <GradientButton type="submit" disabled={!isValid || isLoading}>
                     {isLoading ? (
                       <>
                         <CircularProgress size={20} sx={{ mr: 1, color: "white" }} /> Inscription en cours...

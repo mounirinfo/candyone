@@ -50,7 +50,6 @@ export async function POST(req: Request) {
       console.error("Erreur récupération client :", clientError);
     }
 
-    // 3️⃣ Réponse avec cookies (session persistée côté serveur)
     const response = NextResponse.json(
       {
         success: true,
