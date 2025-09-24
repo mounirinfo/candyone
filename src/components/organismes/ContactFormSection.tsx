@@ -1,13 +1,24 @@
 "use client";
 
 import React from "react";
-import { Box, Stack, styled, TextField, MenuItem } from "@mui/material";
+import {
+  Box,
+  Stack,
+  styled,
+  TextField,
+  MenuItem,
+  Typography,
+  Alert,
+} from "@mui/material";
 import RoundedImage from "../atoms/RoundedImage";
 import SubmitButton from "../atoms/SubmitButton";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export type ContactFormSectionProps = {
   imageUrl: string;
 };
+
+const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string;
 
 const Sky = "#ffffffff";
 
@@ -29,8 +40,17 @@ export const ContactFormSection: React.FC<ContactFormSectionProps> = ({
 }) => {
   const [values, setValues] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
+  const [captchaToken, setCaptchaToken] = React.useState<string | null>(null);
 
-  // 🔹 Pré-remplissage du formulaire
+  // 🔹 feedback
+  const [feedbackMessage, setFeedbackMessage] = React.useState<string | null>(
+    null
+  );
+  const [feedbackType, setFeedbackType] = React.useState<
+    "success" | "error" | null
+  >(null);
+
+  // Pré-remplissage
   React.useEffect(() => {
     const fetchClient = async () => {
       try {
@@ -61,7 +81,16 @@ export const ContactFormSection: React.FC<ContactFormSectionProps> = ({
     };
 
   const handleSubmit = async () => {
+    if (!captchaToken) {
+      setFeedbackMessage("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
+      setFeedbackType("error");
+      return;
+    }
+
     setLoading(true);
+    setFeedbackMessage(null);
+    setFeedbackType(null);
+
     try {
       const res = await fetch("/api/callbacks", {
         method: "POST",
@@ -72,21 +101,25 @@ export const ContactFormSection: React.FC<ContactFormSectionProps> = ({
           email: values.email,
           message: values.message,
           notes_interne: values.coach,
+          recaptcha: captchaToken,
         }),
       });
 
-      const text = await res.text();
-
       if (!res.ok) {
-        throw new Error(text);
+        throw new Error(await res.text());
       }
 
-      const data = JSON.parse(text);
-      alert("✅ Callback créé avec succès !");
+      const data = await res.json();
       console.log("➡️", data);
+
+      setFeedbackMessage("✅ Envoyé avec succès !");
+      setFeedbackType("success");
     } catch (err) {
-      alert("❌ Erreur lors de l’envoi du formulaire");
       console.error("ERREUR FETCH:", err);
+      setFeedbackMessage(
+        "❌ Erreur lors de l’envoi, veuillez réessayer ultérieurement."
+      );
+      setFeedbackType("error");
     } finally {
       setLoading(false);
     }
@@ -157,9 +190,19 @@ export const ContactFormSection: React.FC<ContactFormSectionProps> = ({
             <MenuItem value="EDUIN">Eduin</MenuItem>
             <MenuItem value="QUENTIN">Quentin</MenuItem>
           </TextField>
+
+          {/* reCAPTCHA */}
+          <ReCAPTCHA sitekey={SITE_KEY} onChange={setCaptchaToken} />
+
           <SubmitButton onClick={handleSubmit} disabled={loading}>
             {loading ? "Envoi en cours..." : "Envoyer"}
           </SubmitButton>
+
+          {feedbackMessage && feedbackType && (
+            <Alert severity={feedbackType} sx={{ mt: 2 }}>
+              {feedbackMessage}
+            </Alert>
+          )}
         </Stack>
       </Box>
     </Grid>

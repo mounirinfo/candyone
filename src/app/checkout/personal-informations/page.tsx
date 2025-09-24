@@ -1,4 +1,3 @@
-// src/app/inscription/coordonnees/page.tsx
 "use client";
 
 import { useForm, Controller } from "react-hook-form";
@@ -20,9 +19,6 @@ import {
   MenuItem,
   CircularProgress,
   Divider,
-  Stepper,
-  Step,
-  StepLabel,
   styled,
 } from "@mui/material";
 import {
@@ -35,10 +31,10 @@ import {
 
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
+import CheckoutStepper from "@/components/organismes/CheckoutStepper";
 import { useCheckoutStore } from "@/stores/useCheckoutStore";
 
 const primaryColor = "#FB98F6";
-const secondaryColor = "#2D3748";
 
 // ✅ Schéma de validation stricte
 const schema = yup.object().shape({
@@ -64,8 +60,6 @@ const schema = yup.object().shape({
   acceptMarketing: yup.boolean(),
   acceptContact: yup.boolean(),
 });
-
-const steps = ["Choix de la salle", "Choix de l'abonnement", "Options", "Coordonnées"];
 
 const GradientButton = styled(Button)({
   background: `linear-gradient(45deg, ${primaryColor} 0%, #F06292 100%)`,
@@ -96,7 +90,7 @@ export default function CoordonneesPage() {
     formState: { errors, isValid },
   } = useForm({
     resolver: yupResolver(schema),
-    mode: "onChange", // ✅ valide à chaque saisie
+    mode: "onChange",
     defaultValues: {
       acceptMarketing: false,
       acceptContact: false,
@@ -171,23 +165,8 @@ export default function CoordonneesPage() {
         <Container maxWidth="md">
           <Card sx={{ borderRadius: 3, boxShadow: 3, backgroundColor: "rgba(255, 255, 255, 0.95)" }}>
             <CardContent sx={{ p: 4 }}>
-              <Stepper activeStep={3} alternativeLabel sx={{ mb: 6 }}>
-                {steps.map((label) => (
-                  <Step key={label}>
-                    <StepLabel
-                      sx={{
-                        "& .MuiStepLabel-label": {
-                          fontWeight: 600,
-                          fontSize: "0.9rem",
-                          color: secondaryColor,
-                        },
-                      }}
-                    >
-                      {label}
-                    </StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
+              {/* ✅ Stepper uniformisé */}
+              <CheckoutStepper activeStep={3} />
 
               <Box sx={{ textAlign: "center", mb: 4 }}>
                 <Typography variant="h4" fontWeight="bold" gutterBottom>

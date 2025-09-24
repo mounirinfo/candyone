@@ -1,4 +1,3 @@
-// app/api/callbacks/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
@@ -6,6 +5,38 @@ export async function POST(req: Request) {
   const supabase = createServerSupabaseClient();
   const body = await req.json();
 
+  // 🔹 Vérifier le reCAPTCHA avant toute insertion
+  const recaptchaToken = body.recaptcha;
+  if (!recaptchaToken) {
+    return NextResponse.json(
+      { error: "Token reCAPTCHA manquant" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const verifyRes = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`,
+      { method: "POST" }
+    );
+
+    const verifyData = await verifyRes.json();
+
+    if (!verifyData.success) {
+      return NextResponse.json(
+        { error: "Échec vérification reCAPTCHA" },
+        { status: 400 }
+      );
+    }
+  } catch (err) {
+    console.error("Erreur vérification reCAPTCHA:", err);
+    return NextResponse.json(
+      { error: "Impossible de vérifier reCAPTCHA" },
+      { status: 500 }
+    );
+  }
+
+  // 🔹 Récupérer l’utilisateur connecté
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -22,6 +53,7 @@ export async function POST(req: Request) {
     client_id = client?.id ?? null;
   }
 
+  // 🔹 Insérer le callback
   const { data, error } = await supabase
     .from("callback")
     .insert([
@@ -31,7 +63,7 @@ export async function POST(req: Request) {
         telephone: body.telephone,
         email: body.email,
         message: body.message,
-        notes_interne: body.notes_interne, 
+        notes_interne: body.notes_interne,
       },
     ])
     .select()

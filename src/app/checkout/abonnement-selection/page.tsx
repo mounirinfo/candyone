@@ -22,7 +22,7 @@ const secondaryColor = "#2D3748";
 const steps: string[] = [
   "Choix de la salle",
   "Choix de l'abonnement",
-  "Options",
+  "Choix des options",
   "Coordonnées",
 ];
 
@@ -74,17 +74,63 @@ export default function AbonnementSelection(): JSX.Element {
             backdropFilter: "blur(12px)",
           }}
         >
-          {/* Stepper */}
+          {/* Stepper harmonisé */}
           <Stepper
-            activeStep={step - 1}
+            activeStep={step }
             alternativeLabel
             sx={{
               mb: { xs: 3, md: 6 },
+              "& .MuiStep-root": {
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                position: "relative",
+              },
+              "& .MuiStepLabel-root": {
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              },
+              "& .MuiStepLabel-iconContainer": {
+                zIndex: 2,
+                padding: 0,
+              },
               "& .MuiStepLabel-label": {
                 fontWeight: 600,
                 fontSize: { xs: "0.65rem", sm: "0.8rem", md: "0.95rem" },
                 color: secondaryColor,
-                whiteSpace: "nowrap",
+                mt: 1,
+                textAlign: "center",
+              },
+              "& .MuiStepIcon-root": {
+                color: "#e0e0e0",
+                width: { xs: 24, sm: 28, md: 32 },
+                height: { xs: 24, sm: 28, md: 32 },
+                "&.Mui-active": {
+                  color: primaryColor,
+                  boxShadow: `0 0 0 4px ${primaryColor}20`,
+                },
+                "&.Mui-completed": {
+                  color: primaryColor,
+                },
+                "& .MuiStepIcon-text": {
+                  fill: secondaryColor,
+                  fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.8rem" },
+                  fontWeight: 600,
+                },
+              },
+              "& .MuiStepConnector-root": {
+                position: "absolute",
+                top: { xs: 12, sm: 14, md: 16 },
+              },
+              "& .MuiStepConnector-line": {
+                borderColor: primaryColor,
+                borderTopWidth: 3,
+                borderRadius: 2,
+              },
+              "& .MuiStep-root:first-of-type .MuiStepConnector-root": {
+                display: "none",
               },
             }}
           >
@@ -130,7 +176,7 @@ export default function AbonnementSelection(): JSX.Element {
             selectedPlan={selectedPlan}
           />
 
-          {/* Boutons */}
+          {/* Bouton Retour */}
           <Box
             sx={{
               mt: { xs: 4, md: 6 },

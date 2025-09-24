@@ -10,9 +10,6 @@ import {
   Box,
   CardMedia,
   styled,
-  Stepper,
-  Step,
-  StepLabel,
   CircularProgress,
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
@@ -20,9 +17,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
 import { useCheckoutStore } from "@/stores/useCheckoutStore";
+import CheckoutStepper from "@/components/organismes/CheckoutStepper"; // ✅ import du Stepper réutilisable
 
 const primaryColor = "#FB98F6";
-const secondaryColor = "#2D3748";
 
 const GradientButton = styled(Button)({
   background: `linear-gradient(45deg, ${primaryColor} 0%, #F06292 100%)`,
@@ -45,8 +42,6 @@ interface Option {
   image: string;
 }
 
-const steps = ["Choix de la salle", "Choix de l'abonnement", "Options", "Coordonnées"];
-
 const OptionSelectionPage = () => {
   const router = useRouter();
   const { step, setStep, data, updateData } = useCheckoutStore();
@@ -61,7 +56,6 @@ const OptionSelectionPage = () => {
         const res = await fetch("/api/options");
         const json = await res.json();
 
-        // 👉 Images locales associées par ordre
         const localImages: string[] = [
           "/coaching.png",
           "/nutrition.png",
@@ -69,7 +63,6 @@ const OptionSelectionPage = () => {
           "/cours.png",
         ];
 
-        // Injection des images selon l’ordre
         const optionsWithImages = json.map((opt: Option, index: number) => ({
           ...opt,
           image: localImages[index] || "/default.png",
@@ -112,7 +105,6 @@ const OptionSelectionPage = () => {
     <>
       <Header />
 
-      {/* 👉 Fond décoratif global */}
       <Box
         sx={{
           minHeight: "100vh",
@@ -131,7 +123,6 @@ const OptionSelectionPage = () => {
           },
         }}
       >
-        {/* 👉 Contenu principal */}
         <Container
           maxWidth="xl"
           sx={{
@@ -142,27 +133,11 @@ const OptionSelectionPage = () => {
             boxShadow: 3,
             p: { xs: 3, md: 6 },
             backdropFilter: "blur(12px)",
-            mb: { xs: 12, md: 8 }, // espace pour sticky button mobile
+            mb: { xs: 12, md: 8 },
           }}
         >
-          {/* Stepper */}
-          <Stepper activeStep={step - 1} alternativeLabel sx={{ mb: 6 }}>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel
-                  sx={{
-                    "& .MuiStepLabel-label": {
-                      fontWeight: 600,
-                      fontSize: "0.9rem",
-                      color: secondaryColor,
-                    },
-                  }}
-                >
-                  {label}
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
+          {/* ✅ Stepper réutilisable */}
+          <CheckoutStepper activeStep={step - 1} />
 
           <Typography
             variant="h3"
@@ -218,7 +193,9 @@ const OptionSelectionPage = () => {
                         display: "flex",
                         flexDirection: "column",
                         borderRadius: 3,
-                        border: `2px solid ${isSelected ? primaryColor : "#eee"}`,
+                        border: `2px solid ${
+                          isSelected ? primaryColor : "#eee"
+                        }`,
                         transition: "all 0.3s ease",
                         boxShadow: isSelected ? 6 : 2,
                         "&:hover": {
@@ -233,11 +210,16 @@ const OptionSelectionPage = () => {
                         alt={option.name}
                         sx={{ height: 200, width: "100%", objectFit: "cover" }}
                       />
-                      <CardContent sx={{ flexGrow: 1, p: 3, backgroundColor: "white" }}>
+                      <CardContent
+                        sx={{ flexGrow: 1, p: 3, backgroundColor: "white" }}
+                      >
                         <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
                           {option.name}
                         </Typography>
-                        <Typography variant="body2" sx={{ mb: 2, color: primaryColor }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ mb: 2, color: primaryColor }}
+                        >
                           {option.price}
                         </Typography>
                         <Typography
@@ -253,10 +235,14 @@ const OptionSelectionPage = () => {
                           sx={{
                             borderRadius: 2,
                             borderColor: primaryColor,
-                            backgroundColor: isSelected ? primaryColor : "transparent",
+                            backgroundColor: isSelected
+                              ? primaryColor
+                              : "transparent",
                             color: isSelected ? "white" : primaryColor,
                             "&:hover": {
-                              backgroundColor: isSelected ? "#f06292" : "#f8f8f8",
+                              backgroundColor: isSelected
+                                ? "#f06292"
+                                : "#f8f8f8",
                             },
                           }}
                         >
@@ -308,7 +294,7 @@ const OptionSelectionPage = () => {
         </Container>
       </Box>
 
-      {/* 👉 Sticky button mobile */}
+      {/* Sticky button mobile */}
       <Box
         sx={{
           position: "fixed",

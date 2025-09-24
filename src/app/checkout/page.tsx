@@ -1,31 +1,20 @@
-// src/app/checkout/club-selection/page.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Container,
-  Stepper,
-  Step,
-  StepLabel,
   Box,
   Button,
+  Typography,
 } from "@mui/material";
-
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
 import ClubSelectorHero from "@/components/organismes/ClubSelectorHero";
 import { useCheckoutStore } from "@/stores/useCheckoutStore";
+import CheckoutStepper from "@/components/organismes/CheckoutStepper"; // ✅ on importe ton composant
 
 const primaryColor = "#FB98F6";
-const secondaryColor = "#2D3748";
-
-const steps = [
-  "Choix de la salle",
-  "Choix de l'abonnement",
-  "Choix des options",
-  "Coordonnées",
-];
 
 const ClubSelectionPage = () => {
   const router = useRouter();
@@ -52,7 +41,7 @@ const ClubSelectionPage = () => {
 
   const handleClubSelect = (clubId: string) => {
     updateData({ clubId });
-    setStep(2);
+    setStep(1);
     router.push("/checkout/abonnement-selection");
   };
 
@@ -92,30 +81,14 @@ const ClubSelectionPage = () => {
             backdropFilter: "blur(12px)",
           }}
         >
-          {/* Stepper */}
-          <Stepper
-            activeStep={step - 1}
-            alternativeLabel
-            sx={{
-              mb: { xs: 3, md: 6 },
-              "& .MuiStepLabel-label": {
-                fontWeight: 600,
-                fontSize: { xs: "0.65rem", sm: "0.8rem", md: "0.95rem" },
-                color: secondaryColor,
-                whiteSpace: "nowrap",
-              },
-            }}
-          >
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
+          {/* ✅ Stepper réutilisable */}
+          <CheckoutStepper activeStep={step-1} />
 
           {/* Clubs */}
           {loading ? (
-            <p style={{ textAlign: "center" }}>Chargement des clubs...</p>
+            <Typography sx={{ textAlign: "center" }}>
+              Chargement des clubs...
+            </Typography>
           ) : (
             <ClubSelectorHero
               backgroundUrl="salle4.jpg"

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation"; // 👈 à importer
 import Header from "@/components/organismes/Header"; 
 import Footer from "@/components/organismes/Footer"; 
 import { CssBaseline, Container, Box } from "@mui/material";
@@ -17,8 +18,15 @@ import PersonalTrainer from "@/components/organismes/PersonalTrainer";
 import DiscoverCandyOneHero from "@/components/organismes/DiscoverCandyOneHero";
 import RecipeSection from "@/components/organismes/RecipeSection";
 import ContactFormSection from "@/components/organismes/ContactFormSection";
-import ConfectionPricingSection from "@/components/organismes/ConfectionPricingSection"
+import ConfectionPricingSection from "@/components/organismes/ConfectionPricingSection";
+
 export default function HomePage() {
+  const router = useRouter();
+
+  const handleClubSelect = () => {
+    router.push(`/checkout`);
+  };
+
   return (
     <>
       <CssBaseline /> 
@@ -29,9 +37,12 @@ export default function HomePage() {
         onReserveHref="/checkout"
       />
 
-      <ConfectionPricingSection onSelectPlan={function (planId: string): void {
-        throw new Error("Function not implemented.");
-      } } selectedPlan={null} />
+      <ConfectionPricingSection
+        onSelectPlan={function (planId: string): void {
+          throw new Error("Function not implemented.");
+        }}
+        selectedPlan={null}
+      />
 
       <ClubSelectorHero
         backgroundUrl="salle1.jpg"
@@ -42,14 +53,14 @@ export default function HomePage() {
             address1: "1 AVENUE GEORGES POMPIDOU",
             address2: "95120 ERMONT",
             accent: "pink",
-            onClick: () => alert("Club Ermont Pompidou"),
+            onClick: () => handleClubSelect(),
           },
           {
             id: "ermont-2",
             address1: "258 BOULEVARD DU HAVRE",
             address2: "95120 ERMONT",
             accent: "blue",
-            onClick: () => alert("Club Ermont Havre"),
+            onClick: () => handleClubSelect(), 
           },
         ]}
       />

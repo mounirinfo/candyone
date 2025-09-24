@@ -23,26 +23,25 @@ export default function NavigationBar() {
   const links = ["Nos clubs", "Les confiseries", "Les coachs"];
 
   useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      const res = await fetch("/api/auth/me", {
-        method: "GET",
-        credentials: "include",
-      });
-      if (!res.ok) {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) {
+          setUser(null);
+          return;
+        }
+        const data = await res.json();
+        setUser(data.user);
+      } catch (err) {
+        console.error("Erreur fetch user:", err);
         setUser(null);
-        return;
       }
-      const data = await res.json();
-      setUser(data.user);
-    } catch (err) {
-      console.error("Erreur fetch user:", err);
-      setUser(null);
-    }
-  };
-  fetchUser();
-}, []);
-
+    };
+    fetchUser();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -51,6 +50,14 @@ export default function NavigationBar() {
     } catch (err) {
       console.error("Erreur déconnexion :", err);
     }
+  };
+
+  const buttonStyles = {
+    width: "200px",
+    height: "40px",
+    fontWeight: "bold",
+    letterSpacing: "1px",
+    fontSize: "1rem",
   };
 
   return (
@@ -141,10 +148,9 @@ export default function NavigationBar() {
                   <Button
                     variant="outlined"
                     sx={{
+                      ...buttonStyles,
                       borderColor: "white",
                       color: "white",
-                      fontWeight: "bold",
-                      letterSpacing: "1px",
                       "&:hover": { borderColor: "#ff66cc", color: "#ff66cc" },
                     }}
                   >
@@ -155,15 +161,10 @@ export default function NavigationBar() {
                   <Button
                     variant="contained"
                     sx={{
+                      ...buttonStyles,
                       backgroundColor: "#ff66cc",
-                      fontWeight: "bold",
-                      fontSize: "1rem",
-                      letterSpacing: "2px",
                       color: "white",
                       borderRadius: 0,
-                      px: 3,
-                      py: 1,
-                      height: "60%",
                       "&:hover": { backgroundColor: "#e755b5" },
                     }}
                   >
@@ -183,7 +184,7 @@ export default function NavigationBar() {
                       "&:hover": { backgroundColor: "#d6f7f9" },
                     }}
                   >
-                    Bonjour, {user.email?.split("@")[0]}
+    Bonjour,  {user.user_metadata?.nom} {user.user_metadata?.prenom}
                   </Button>
                 </Link>
                 <Button
@@ -250,6 +251,7 @@ export default function NavigationBar() {
                         py: 1.5,
                         border: "2px solid #53d0fc",
                         justifyContent: "center",
+                        ...buttonStyles,
                       }}
                     >
                       <ListItemText
@@ -269,7 +271,12 @@ export default function NavigationBar() {
                 <ListItem disablePadding>
                   <Link href="/checkout" passHref>
                     <ListItemButton
-                      sx={{ mt: 2, py: 1.5, backgroundColor: "#ff66cc" }}
+                      sx={{
+                        mt: 2,
+                        py: 1.5,
+                        backgroundColor: "#ff66cc",
+                        ...buttonStyles,
+                      }}
                     >
                       <ListItemText
                         primary="S’INSCRIRE"
