@@ -37,38 +37,43 @@ export default function LoginForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
+ const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setError(null);
 
-    if (!formData.email || !formData.password) {
-      setError("Veuillez remplir tous les champs.");
+  if (!formData.email || !formData.password) {
+    setError("Veuillez remplir tous les champs.");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error || "Échec de la connexion");
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+    // ✅ Connexion réussie
+    console.log("Utilisateur :", data.user);
+    console.log("Rôle :", data.role);
 
-      const data = await res.json();
+    // Redirection selon la réponse API
+    window.location.href = data.redirectTo || "/profile";
+  } catch (err) {
+    setError("Erreur réseau, veuillez réessayer.");
+  } finally {
+    setLoading(false);
+  }
+};
 
-      if (!res.ok) {
-        setError(data.error || "Échec de la connexion");
-        return;
-      }
-
-      // ✅ Connexion réussie : redirection vers le tableau de bord
-      window.location.href = "/profile";
-    } catch (err) {
-      setError("Erreur réseau, veuillez réessayer.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);

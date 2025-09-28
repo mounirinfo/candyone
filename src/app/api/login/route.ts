@@ -1,3 +1,4 @@
+// src/app/api/auth/login/route.ts
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
@@ -13,13 +14,15 @@ export async function POST(req: Request) {
       );
     }
 
+    // ✅ Utiliser l’ANON KEY pour l’auth
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!, 
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
+    // 🔑 Authentification
     const { data: authData, error: authError } =
-   await supabase.auth.signInWithPassword({
+      await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -32,30 +35,37 @@ export async function POST(req: Request) {
     }
 
     const user = authData.user;
-    if (!user) {
-      return NextResponse.json(
-        { error: "Utilisateur introuvable" },
-        { status: 404 }
-      );
-    }
 
-    // 2️⃣ Récupération du profil client lié
-    const { data: client, error: clientError } = await supabase
+    // 🔍 Vérifier si c'est un client
+    const { data: client } = await supabase
       .from("client")
-      .select("*")
+      .select("id")
       .eq("auth_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (clientError) {
-      console.error("Erreur récupération client :", clientError);
+    // 🔍 Vérifier si c'est un employé
+    const { data: employe } = await supabase
+      .from("employe")
+      .select("id, role")
+      .eq("auth_id", user.id)
+      .maybeSingle();
+
+    let role = "client";
+    let redirectTo = "/profile";
+
+    if (employe) {
+      role = employe.role || "employe";
+      redirectTo = "/admin";
     }
 
+    // ✅ Réponse + cookies
     const response = NextResponse.json(
       {
         success: true,
         message: "Connexion réussie",
         user,
-        client,
+        role,
+        redirectTo,
       },
       { status: 200 }
     );

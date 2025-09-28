@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -19,8 +20,13 @@ import Link from "next/link";
 export default function NavigationBar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const router = useRouter();
 
-  const links = ["Nos clubs", "Les confiseries", "Les coachs"];
+  const navLinks = [
+    { label: "Nos clubs", href: "/checkout", type: "link" },
+    { label: "Les confiseries", href: "#confiseries", type: "scroll" },
+    { label: "Les coachs", href: "#coachs", type: "scroll" },
+  ];
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -52,6 +58,20 @@ export default function NavigationBar() {
     }
   };
 
+  const handleNavClick = (link: { href: string; type: string }) => {
+    if (link.type === "link") {
+      router.push(link.href);
+    } else if (link.type === "scroll") {
+      const el = document.querySelector(link.href);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        router.push("/" + link.href); // fallback si on n’est pas sur la home
+      }
+    }
+    setDrawerOpen(false);
+  };
+
   const buttonStyles = {
     width: "200px",
     height: "40px",
@@ -78,42 +98,44 @@ export default function NavigationBar() {
             alignItems: "center",
           }}
         >
-          {/* Logo */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography
-              sx={{
-                fontWeight: "bold",
-                backgroundColor: "black",
-                color: "white",
-                px: 1.5,
-                py: 0.5,
-                letterSpacing: "4px",
-                fontSize: "1.4rem",
-              }}
-            >
-              CANDY
-            </Typography>
-            <Typography
-              sx={{
-                fontWeight: "bold",
-                color: "black",
-                fontSize: "1.4rem",
-                ml: 1,
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              B
-              <Image
-                src="/sucette.png"
-                alt="Candy Logo"
-                width={35}
-                height={35}
-                style={{ margin: "0 4px" }}
-              />
-              DY
-            </Typography>
-          </Box>
+          {/* Logo → Home */}
+          <Link href="/" passHref>
+            <Box sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                  backgroundColor: "black",
+                  color: "white",
+                  px: 1.5,
+                  py: 0.5,
+                  letterSpacing: "4px",
+                  fontSize: "1.4rem",
+                }}
+              >
+                CANDY
+              </Typography>
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                  color: "black",
+                  fontSize: "1.4rem",
+                  ml: 1,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                B
+                <Image
+                  src="/sucette.png"
+                  alt="Candy Logo"
+                  width={35}
+                  height={35}
+                  style={{ margin: "0 4px" }}
+                />
+                DY
+              </Typography>
+            </Box>
+          </Link>
 
           {/* Links Desktop */}
           <Box
@@ -123,10 +145,12 @@ export default function NavigationBar() {
               gap: 10,
             }}
           >
-            {links.map((link) => (
+            {navLinks.map((link) => (
               <Typography
-                key={link}
+                key={link.label}
+                onClick={() => handleNavClick(link)}
                 sx={{
+                  cursor: "pointer",
                   fontFamily: '"Brush Script MT", "Comic Sans MS", cursive',
                   fontSize: "2.5rem",
                   fontWeight: 100,
@@ -135,7 +159,7 @@ export default function NavigationBar() {
                   "&:hover": { color: "#ffb3f5" },
                 }}
               >
-                {link}
+                {link.label}
               </Typography>
             ))}
           </Box>
@@ -184,7 +208,8 @@ export default function NavigationBar() {
                       "&:hover": { backgroundColor: "#d6f7f9" },
                     }}
                   >
-    Bonjour,  {user.user_metadata?.nom} {user.user_metadata?.prenom}
+                    Bonjour, {user.user_metadata?.nom}{" "}
+                    {user.user_metadata?.prenom}
                   </Button>
                 </Link>
                 <Button
@@ -225,11 +250,11 @@ export default function NavigationBar() {
       >
         <Box sx={{ width: 260, p: 2 }} role="presentation">
           <List>
-            {links.map((text) => (
-              <ListItem key={text} disablePadding>
-                <ListItemButton>
+            {navLinks.map((link) => (
+              <ListItem key={link.label} disablePadding>
+                <ListItemButton onClick={() => handleNavClick(link)}>
                   <ListItemText
-                    primary={text}
+                    primary={link.label}
                     primaryTypographyProps={{
                       sx: {
                         fontFamily: '"Dancing Script", cursive',
@@ -241,6 +266,7 @@ export default function NavigationBar() {
                 </ListItemButton>
               </ListItem>
             ))}
+            {/* Boutons auth */}
             {!user ? (
               <>
                 <ListItem disablePadding>

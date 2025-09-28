@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation"; // 👈 à importer
+import { useRouter } from "next/navigation";
 import Header from "@/components/organismes/Header"; 
 import Footer from "@/components/organismes/Footer"; 
 import { CssBaseline, Container, Box } from "@mui/material";
@@ -37,12 +37,15 @@ export default function HomePage() {
         onReserveHref="/checkout"
       />
 
-      <ConfectionPricingSection
-        onSelectPlan={function (planId: string): void {
-          throw new Error("Function not implemented.");
-        }}
-        selectedPlan={null}
-      />
+      {/* 🎯 Section Confiseries */}
+      <Box id="confiseries">
+        <ConfectionPricingSection
+          onSelectPlan={function (planId: string): void {
+            throw new Error("Function not implemented.");
+          }}
+          selectedPlan={null}
+        />
+      </Box>
 
       <ClubSelectorHero
         backgroundUrl="salle1.jpg"
@@ -133,7 +136,8 @@ export default function HomePage() {
         onCta={() => alert("Expertisable – CTA")}
       />
 
-      <Box mt={4}>
+      {/* 🎯 Section Coachs */}
+      <Box id="coachs" mt={4}>
         <PersonalTrainer
           name="GLORIA"
           role="PERSONAL TRAINER"
@@ -195,8 +199,7 @@ export default function HomePage() {
         ]}
       />
 
-<ContactFormSection imageUrl="formulaire.png" />
-
+      <ContactFormSection imageUrl="formulaire.png" />
 
       <Container maxWidth="lg" sx={{ mt: 4, minHeight: "70vh" }}>
       </Container>
