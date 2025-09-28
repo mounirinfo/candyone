@@ -55,7 +55,7 @@ export async function POST(req: Request) {
 
     if (employe) {
       role = employe.role || "employe";
-      redirectTo = "/admin";
+      redirectTo = "/dashboard";
     }
 
     // ✅ Réponse + cookies

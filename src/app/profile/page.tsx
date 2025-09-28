@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Typography,
@@ -8,11 +8,12 @@ import {
   Box,
   Chip,
   Divider,
-  List,
-  ListItem,
-  ListItemText,
   Stack,
+  Button,
   Avatar,
+  TextField,
+  MenuItem,
+  Alert,
 } from "@mui/material";
 import {
   SportsGymnastics as ClubIcon,
@@ -21,17 +22,26 @@ import {
   CalendarToday as CalendarIcon,
   Phone as PhoneIcon,
   LocationOn as MapPinIcon,
-  Person as UserIcon,
 } from "@mui/icons-material";
-
+import SubmitButton from "@/components/atoms/SubmitButton";
+import ReCAPTCHA from "react-google-recaptcha";
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
 
 const primaryColor = "#FB98F6";
+const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string;
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showCallback, setShowCallback] = useState(false);
+
+  // Formulaire callback states
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [formLoading, setFormLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [feedbackType, setFeedbackType] = useState<"success" | "error" | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -39,6 +49,18 @@ export default function ProfilePage() {
         const res = await fetch("/api/profile");
         const data = await res.json();
         setProfile(data);
+
+        // Pré-remplir formulaire si client dispo
+        if (data.client) {
+          setFormValues({
+            prenom: data.client.prenom ?? "",
+            nom: data.client.nom ?? "",
+            telephone: data.client.telephone ?? "",
+            email: data.client.email ?? "",
+            message: "Vous allez être contacté par votre coach.",
+            coach: "",
+          });
+        }
       } catch (err) {
         console.error("Erreur récupération profil:", err);
       } finally {
@@ -47,6 +69,49 @@ export default function ProfilePage() {
     };
     fetchProfile();
   }, []);
+
+  const handleFormChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormValues(prev => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const handleFormSubmit = async () => {
+    if (!captchaToken) {
+      setFeedbackMessage("⚠️ Merci de valider le reCAPTCHA avant d’envoyer.");
+      setFeedbackType("error");
+      return;
+    }
+
+    setFormLoading(true);
+    setFeedbackMessage(null);
+    setFeedbackType(null);
+
+    try {
+      const res = await fetch("/api/callbacks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nom: `${formValues.prenom} ${formValues.nom}`.trim(),
+          telephone: formValues.telephone,
+          email: formValues.email,
+          message: formValues.message,
+          notes_interne: formValues.coach || "Admin",
+          recaptcha: captchaToken,
+        }),
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      setFeedbackMessage("✅ Envoyé avec succès !");
+      setFeedbackType("success");
+      setShowCallback(false); // fermer formulaire si succès
+    } catch (err) {
+      console.error("Erreur fetch callback:", err);
+      setFeedbackMessage("❌ Erreur lors de l’envoi, veuillez réessayer ultérieurement.");
+      setFeedbackType("error");
+    } finally {
+      setFormLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -64,7 +129,7 @@ export default function ProfilePage() {
     );
   }
 
-  const { client, adresses, contrat, club, abonnement, formule, options } = profile;
+  const { client, adresses, club, abonnement, formule, options } = profile;
 
   return (
     <>
@@ -116,7 +181,6 @@ export default function ProfilePage() {
                 gap: 3,
               }}
             >
-              {/* Infos perso */}
               <Stack spacing={3} flex={1}>
                 <Stack direction="row" spacing={2}>
                   <Avatar>
@@ -155,6 +219,24 @@ export default function ProfilePage() {
                 </Stack>
               </Stack>
             </Box>
+
+            {/* Boutons actions */}
+            <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 3 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => (window.location.href = "/checkout/paiement")}
+              >
+                Payer mon abonnement
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setShowCallback(prev => !prev)}
+              >
+                Être rappelé par un coach
+              </Button>
+            </Stack>
           </Card>
 
           {/* Section Abonnement */}
@@ -164,7 +246,7 @@ export default function ProfilePage() {
                 Mon Abonnement
               </Typography>
               <Stack spacing={3}>
-                <Chip label={abonnement.statut} color="success" />
+                <Chip label="En attente de paiement" color="warning" />
                 <Typography>
                   Début : {new Date(abonnement.date_debut).toLocaleDateString()}
                 </Typography>
@@ -215,6 +297,82 @@ export default function ProfilePage() {
                   </Stack>
                 </>
               )}
+            </Card>
+          )}
+
+          {/* Formulaire callback */}
+          {showCallback && (
+            <Card sx={{ mb: 4, p: 4 }}>
+              <Typography variant="h5" mb={2}>
+                Votre coach va vous contacter
+              </Typography>
+              <Stack spacing={2}>
+                <TextField
+                  required
+                  label="Prénom"
+                  variant="outlined"
+                  fullWidth
+                  value={formValues.prenom ?? ""}
+                  onChange={handleFormChange("prenom")}
+                />
+                <TextField
+                  required
+                  label="Nom"
+                  variant="outlined"
+                  fullWidth
+                  value={formValues.nom ?? ""}
+                  onChange={handleFormChange("nom")}
+                />
+                <TextField
+                  required
+                  label="Téléphone"
+                  variant="outlined"
+                  fullWidth
+                  value={formValues.telephone ?? ""}
+                  onChange={handleFormChange("telephone")}
+                />
+                <TextField
+                  required
+                  type="email"
+                  label="Email"
+                  variant="outlined"
+                  fullWidth
+                  value={formValues.email ?? ""}
+                  onChange={handleFormChange("email")}
+                />
+                <TextField
+                  label="Message"
+                  variant="outlined"
+                  multiline
+                  rows={4}
+                  fullWidth
+                  value={formValues.message ?? ""}
+                  onChange={handleFormChange("message")}
+                />
+                <TextField
+                  select
+                  label="Coach souhaité"
+                  fullWidth
+                  value={formValues.coach ?? ""}
+                  onChange={handleFormChange("coach")}
+                >
+                  <MenuItem value="GLORIA">Gloria</MenuItem>
+                  <MenuItem value="EDUIN">Eduin</MenuItem>
+                  <MenuItem value="QUENTIN">Quentin</MenuItem>
+                </TextField>
+
+                <ReCAPTCHA sitekey={SITE_KEY} onChange={setCaptchaToken} />
+
+                <SubmitButton onClick={handleFormSubmit} disabled={formLoading}>
+                  {formLoading ? "Envoi en cours..." : "Envoyer"}
+                </SubmitButton>
+
+                {feedbackMessage && feedbackType && (
+                  <Alert severity={feedbackType} sx={{ mt: 2 }}>
+                    {feedbackMessage}
+                  </Alert>
+                )}
+              </Stack>
             </Card>
           )}
         </Container>

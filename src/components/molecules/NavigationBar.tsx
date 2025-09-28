@@ -20,6 +20,7 @@ import Link from "next/link";
 export default function NavigationBar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [role, setRole] = useState<string | null>(null);
   const router = useRouter();
 
   const navLinks = [
@@ -28,6 +29,7 @@ export default function NavigationBar() {
     { label: "Les coachs", href: "#coachs", type: "scroll" },
   ];
 
+  // Récupérer l’utilisateur et son rôle
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -37,13 +39,16 @@ export default function NavigationBar() {
         });
         if (!res.ok) {
           setUser(null);
+          setRole(null);
           return;
         }
         const data = await res.json();
         setUser(data.user);
+        setRole(data.user.role);
       } catch (err) {
         console.error("Erreur fetch user:", err);
         setUser(null);
+        setRole(null);
       }
     };
     fetchUser();
@@ -51,8 +56,14 @@ export default function NavigationBar() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/logout", { method: "POST" });
-      setUser(null);
+      const res = await fetch("/api/logout", { method: "POST" });
+      if (res.ok) {
+        setUser(null);
+        setRole(null);
+        router.push("/");
+      } else {
+        console.error("Erreur déconnexion :", await res.text());
+      }
     } catch (err) {
       console.error("Erreur déconnexion :", err);
     }
@@ -66,7 +77,7 @@ export default function NavigationBar() {
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "start" });
       } else {
-        router.push("/" + link.href); // fallback si on n’est pas sur la home
+        router.push("/" + link.href);
       }
     }
     setDrawerOpen(false);
@@ -198,20 +209,23 @@ export default function NavigationBar() {
               </>
             ) : (
               <>
-                <Link href="/profile" passHref>
-                  <Button
-                    sx={{
-                      backgroundColor: "white",
-                      color: "#4dd7e0",
-                      fontWeight: "bold",
-                      px: 3,
-                      "&:hover": { backgroundColor: "#d6f7f9" },
-                    }}
-                  >
-                    Bonjour, {user.user_metadata?.nom}{" "}
-                    {user.user_metadata?.prenom}
-                  </Button>
-                </Link>
+                <Button
+                  sx={{
+                    backgroundColor: "white",
+                    color: "#4dd7e0",
+                    fontWeight: "bold",
+                    px: 3,
+                    "&:hover": { backgroundColor: "#d6f7f9" },
+                  }}
+                  onClick={() =>
+                    router.push(
+                      role === "client" ? "/profile" : "/dashboard"
+                    )
+                  }
+                >
+                  Bonjour, {user.prenom || user.user_metadata?.prenom}{" "}
+                  {user.nom || user.user_metadata?.nom}
+                </Button>
                 <Button
                   variant="outlined"
                   onClick={handleLogout}
@@ -322,20 +336,25 @@ export default function NavigationBar() {
             ) : (
               <>
                 <ListItem disablePadding>
-                  <Link href="/profile" passHref>
-                    <ListItemButton sx={{ mt: 2, py: 1.5 }}>
-                      <ListItemText
-                        primary={`Bonjour, ${user.email?.split("@")[0]}`}
-                        primaryTypographyProps={{
-                          sx: {
-                            fontWeight: "bold",
-                            color: "#53d0fc",
-                            textAlign: "center",
-                          },
-                        }}
-                      />
-                    </ListItemButton>
-                  </Link>
+                  <ListItemButton
+                    sx={{ mt: 2, py: 1.5 }}
+                    onClick={() =>
+                      router.push(
+                        role === "client" ? "/profile" : "/dashboard"
+                      )
+                    }
+                  >
+                    <ListItemText
+                      primary={`Bonjour, ${user.prenom || user.user_metadata?.prenom} ${user.nom || user.user_metadata?.nom}`}
+                      primaryTypographyProps={{
+                        sx: {
+                          fontWeight: "bold",
+                          color: "#53d0fc",
+                          textAlign: "center",
+                        },
+                      }}
+                    />
+                  </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemButton
