@@ -581,3 +581,23 @@ BEGIN
   INSERT INTO journal_acces_rgpd (acteur_type, action, client_id, finalite)
   VALUES ('SYSTEM','ANONYMIZE', p_client_id, 'Exécution anonymisation');
 END; $$ LANGUAGE plpgsql;
+
+
+-- Ajouter la colonne auth_id dans employe
+ALTER TABLE public.employe
+ADD COLUMN auth_id uuid null;
+
+-- Empêcher les doublons d'association (1 employé <-> 1 compte auth)
+ALTER TABLE public.employe
+ADD CONSTRAINT employe_auth_id_key UNIQUE (auth_id);
+
+-- Créer la relation avec auth.users
+ALTER TABLE public.employe
+ADD CONSTRAINT employe_auth_id_fkey
+FOREIGN KEY (auth_id) REFERENCES auth.users (id);
+
+-- (optionnel) Index pour accélérer les recherches par auth_id
+CREATE INDEX IF NOT EXISTS idx_employe_auth_id
+ON public.employe (auth_id);
+
+

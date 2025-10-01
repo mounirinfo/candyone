@@ -22,6 +22,7 @@ import {
   CalendarToday as CalendarIcon,
   Phone as PhoneIcon,
   LocationOn as MapPinIcon,
+  Lock as LockIcon,
 } from "@mui/icons-material";
 import SubmitButton from "@/components/atoms/SubmitButton";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -221,7 +222,7 @@ export default function ProfilePage() {
             </Box>
 
             {/* Boutons actions */}
-            <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 3 }}>
+            <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 3, flexWrap: "wrap" }}>
               <Button
                 variant="contained"
                 color="primary"
@@ -235,6 +236,13 @@ export default function ProfilePage() {
                 onClick={() => setShowCallback(prev => !prev)}
               >
                 Être rappelé par un coach
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<LockIcon />}
+                onClick={() => (window.location.href = "/profile/change-password")}
+              >
+                Changer mon mot de passe
               </Button>
             </Stack>
           </Card>

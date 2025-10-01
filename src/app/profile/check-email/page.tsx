@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { XCircle, ArrowLeft, CreditCard, User } from "lucide-react";
+import { Mail, Heart, ArrowLeft } from "lucide-react";
 import {
   Box,
   Container,
@@ -14,7 +14,7 @@ import Link from "next/link";
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
 
-export default function Cancel() {
+export default function CheckEmailPage() {
   return (
     <>
       <Header />
@@ -66,7 +66,7 @@ export default function Cancel() {
               },
             }}
           >
-            <Box sx={{ textAlign: "center", mb: 3 }}>
+            <Box sx={{ textAlign: "center", mb: 2 }}>
               <Box
                 sx={{
                   display: "inline-flex",
@@ -74,14 +74,31 @@ export default function Cancel() {
                   justifyContent: "center",
                   p: 2,
                   borderRadius: "50%",
-                  background: "linear-gradient(135deg, #ff6666, #ff9999)",
+                  background: "linear-gradient(135deg, #ff99dd, #ff66cc)",
                   color: "white",
-                  mb: 2,
-                  boxShadow: "0 4px 12px rgba(255, 102, 102, 0.4)",
+                  mb: 3,
+                  boxShadow: "0 4px 12px rgba(255, 102, 204, 0.4)",
                 }}
               >
-                <XCircle size={40} fill="white" />
+                <Mail size={32} fill="white" />
               </Box>
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <Link href="/login">
+                <Button
+                  startIcon={<ArrowLeft size={20} />}
+                  sx={{
+                    color: "#ff66cc",
+                    fontWeight: "bold",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 102, 204, 0.1)",
+                    },
+                  }}
+                >
+                  Retour
+                </Button>
+              </Link>
             </Box>
 
             <Box textAlign="center" mb={4}>
@@ -89,7 +106,7 @@ export default function Cancel() {
                 variant="h3"
                 fontWeight="800"
                 sx={{
-                  background: "linear-gradient(135deg, #ff6666, #ff9999)",
+                  background: "linear-gradient(135deg, #ff66cc, #ff99dd)",
                   backgroundClip: "text",
                   textFillColor: "transparent",
                   WebkitBackgroundClip: "text",
@@ -97,58 +114,64 @@ export default function Cancel() {
                   mb: 2,
                 }}
               >
-                ❌ Paiement Annulé
+                📩 Vérifiez vos emails
               </Typography>
               
               <Typography 
                 variant="body1" 
                 color="text.secondary"
-                sx={{ lineHeight: 1.6 }}
+                sx={{ mb: 2, lineHeight: 1.6 }}
               >
-                Votre processus de paiement a été interrompu.
-                <br />
-                Aucun montant n'a été débité de votre compte.
+                Nous vous avons envoyé un lien pour réinitialiser votre mot de passe.  
+                Cliquez dessus pour continuer.
+              </Typography>
+              
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{ 
+                  fontStyle: 'italic',
+                  color: 'rgba(0, 0, 0, 0.6)',
+                  lineHeight: 1.5
+                }}
+              >
+                (Si vous ne voyez pas l'email, vérifiez vos spams.)
               </Typography>
             </Box>
 
             <Stack spacing={2} sx={{ mt: 4 }}>
-              <Link href="/profile/payment" style={{ textDecoration: "none" }}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  startIcon={<CreditCard size={20} />}
-                  sx={{
-                    background: "linear-gradient(135deg, #ff66cc, #ff99dd)",
-                    color: "white",
-                    fontWeight: "bold",
-                    borderRadius: 2,
-                    py: 1.5,
-                    fontSize: "1rem",
-                    boxShadow: "0 6px 12px rgba(255, 102, 204, 0.4)",
-                    "&:hover": {
-                      background: "linear-gradient(135deg, #ff4dc4, #ff80d5)",
-                      boxShadow: "0 8px 16px rgba(255, 102, 204, 0.5)",
-                      transform: "translateY(-2px)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  Réessayer le paiement
-                </Button>
-              </Link>
+              <Button
+                variant="contained"
+                sx={{
+                  background: "linear-gradient(135deg, #ff66cc, #ff99dd)",
+                  color: "white",
+                  fontWeight: "bold",
+                  borderRadius: 2,
+                  py: 1.5,
+                  fontSize: "1rem",
+                  boxShadow: "0 6px 12px rgba(255, 102, 204, 0.4)",
+                  "&:hover": {
+                    background: "linear-gradient(135deg, #ff4dc4, #ff80d5)",
+                    boxShadow: "0 8px 16px rgba(255, 102, 204, 0.5)",
+                    transform: "translateY(-2px)",
+                  },
+                  transition: "all 0.3s ease",
+                }}
+                onClick={() => window.location.reload()}
+              >
+                Rafraîchir la page
+              </Button>
 
-              <Link href="/profile" style={{ textDecoration: "none" }}>
+              <Link href="/login" style={{ textDecoration: 'none' }}>
                 <Button
                   fullWidth
                   variant="outlined"
-                  startIcon={<User size={20} />}
                   sx={{
                     borderRadius: 2,
                     py: 1.5,
                     fontWeight: "bold",
                     borderColor: "rgba(255, 102, 204, 0.3)",
                     color: "#ff66cc",
-                    fontSize: "1rem",
                     "&:hover": {
                       borderColor: "#ff66cc",
                       bgcolor: "rgba(255, 102, 204, 0.05)",
@@ -157,54 +180,22 @@ export default function Cancel() {
                     transition: "all 0.3s ease",
                   }}
                 >
-                  Aller à mon profil
-                </Button>
-              </Link>
-
-              <Link href="/" style={{ textDecoration: "none" }}>
-                <Button
-                  fullWidth
-                  variant="text"
-                  startIcon={<ArrowLeft size={20} />}
-                  sx={{
-                    borderRadius: 2,
-                    py: 1.5,
-                    fontWeight: "bold",
-                    color: "text.secondary",
-                    fontSize: "0.9rem",
-                    "&:hover": {
-                      bgcolor: "rgba(255, 102, 204, 0.05)",
-                      color: "#ff66cc",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  Retour à l'accueil
+                  Retour à la connexion
                 </Button>
               </Link>
             </Stack>
 
-            <Box
-              sx={{
-                textAlign: "center",
-                mt: 4,
-                p: 2,
-                borderRadius: 2,
-                bgcolor: "rgba(255, 102, 204, 0.05)",
-                border: "1px solid rgba(255, 102, 204, 0.1)",
-              }}
-            >
+            <Box textAlign="center" mt={4}>
               <Typography variant="body2" color="text.secondary">
-                Besoin d'aide ?{" "}
+                Vous n'avez pas reçu l'email ?{" "}
                 <Link
-                  href="/contact"
+                  href="/forgot-password"
                   style={{
                     color: "#ff66cc",
                     fontWeight: "bold",
-                    textDecoration: "none",
                   }}
                 >
-                  Contactez notre support
+                  Réessayer
                 </Link>
               </Typography>
             </Box>

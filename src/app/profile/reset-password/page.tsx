@@ -1,8 +1,7 @@
 "use client";
 
 import React, { FormEvent, useState } from "react";
-import { Mail, Lock, Eye, EyeOff, Heart } from "lucide-react";
-import { FcGoogle } from "react-icons/fc";
+import { Lock, Heart, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import {
   Box,
   Container,
@@ -12,68 +11,50 @@ import {
   Button,
   Stack,
   InputAdornment,
-  Divider,
   IconButton,
 } from "@mui/material";
 import Link from "next/link";
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
+import { resetPasswordAction } from "@/actions/reset-password";
 
-interface FormData {
-  email: string;
-  password: string;
-}
-
-export default function LoginForm() {
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-  });
-  const [error, setError] = useState<string | null>(null);
+export default function ResetPasswordPage() {
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    setMessage(null);
 
- const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setError(null);
-
-  if (!formData.email || !formData.password) {
-    setError("Veuillez remplir tous les champs.");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      setError(data.error || "Échec de la connexion");
+    if (!password) {
+      setError("Veuillez saisir votre nouveau mot de passe.");
       return;
     }
 
-    // ✅ Connexion réussie
-    console.log("Utilisateur :", data.user);
-    console.log("Rôle :", data.role);
+    if (password.length < 6) {
+      setError("Le mot de passe doit contenir au moins 6 caractères.");
+      return;
+    }
 
-    // Redirection selon la réponse API
-    window.location.href = data.redirectTo || "/profile";
-  } catch (err) {
-    setError("Erreur réseau, veuillez réessayer.");
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("password", password);
 
+      await resetPasswordAction(formData);
+      
+      setMessage("Votre mot de passe a été réinitialisé avec succès !");
+      setPassword("");
+    } catch (err) {
+      setError("Une erreur est survenue lors de la réinitialisation. Veuillez réessayer.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -81,10 +62,8 @@ export default function LoginForm() {
 
   return (
     <>
-      {/* HEADER */}
       <Header />
 
-      {/* BACKGROUND + FORM */}
       <Box
         sx={{
           minHeight: "100vh",
@@ -132,7 +111,6 @@ export default function LoginForm() {
               },
             }}
           >
-            {/* Icône décorative */}
             <Box sx={{ textAlign: "center", mb: 2 }}>
               <Box
                 sx={{
@@ -147,8 +125,23 @@ export default function LoginForm() {
                   boxShadow: "0 4px 12px rgba(255, 102, 204, 0.4)",
                 }}
               >
-                <Heart size={28} fill="white" />
+                <Lock size={28} fill="white" />
               </Box>
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <Link href="/login">
+                <IconButton
+                  sx={{
+                    color: "#ff66cc",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 102, 204, 0.1)",
+                    },
+                  }}
+                >
+                  <ArrowLeft size={20} />
+                </IconButton>
+              </Link>
             </Box>
 
             <Box textAlign="center" mb={4}>
@@ -164,10 +157,10 @@ export default function LoginForm() {
                   mb: 1,
                 }}
               >
-                Rejoignez Candy Body
+                Nouveau mot de passe
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Commencez votre parcours fitness dès aujourd&apos;hui
+                Choisissez un nouveau mot de passe sécurisé
               </Typography>
             </Box>
 
@@ -187,45 +180,32 @@ export default function LoginForm() {
               </Typography>
             )}
 
+            {message && (
+              <Typography
+                color="success.main"
+                align="center"
+                mb={2}
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  bgcolor: "rgba(76, 175, 80, 0.1)",
+                  border: "1px solid #4caf50",
+                }}
+              >
+                {message}
+              </Typography>
+            )}
+
             <form onSubmit={handleSubmit}>
               <Stack spacing={3}>
                 <TextField
                   fullWidth
                   required
-                  name="email"
-                  label="Adresse Email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Mail size={20} color="#ff66cc" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                      "&:hover fieldset": {
-                        borderColor: "#ff66cc",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ff66cc",
-                        boxShadow: "0 0 0 2px rgba(255, 102, 204, 0.2)",
-                      },
-                    },
-                  }}
-                />
-
-                <TextField
-                  fullWidth
-                  required
                   name="password"
-                  label="Mot de Passe"
+                  label="Nouveau mot de passe"
                   type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={handleChange}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -260,76 +240,56 @@ export default function LoginForm() {
                 />
 
                 <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  sx={{
-                    background: "linear-gradient(135deg, #ff66cc, #ff99dd)",
-                    color: "white",
-                    fontWeight: "bold",
-                    borderRadius: 2,
-                    py: 1.5,
-                    fontSize: "1.1rem",
-                    boxShadow: "0 6px 12px rgba(255, 102, 204, 0.4)",
-                    "&:hover": {
-                      background: "linear-gradient(135deg, #ff4dc4, #ff80d5)",
-                      boxShadow: "0 8px 16px rgba(255, 102, 204, 0.5)",
-                      transform: "translateY(-2px)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  {loading ? "Connexion..." : "Se connecter"}
-                </Button>
+  type="submit"
+  variant="contained"
+  disabled={loading}
+  sx={{
+    background: "linear-gradient(135deg, #ff66cc, #ff99dd)",
+    color: "white",
+    fontWeight: "bold",
+    borderRadius: 2,
+    py: 1.5,
+    fontSize: "1.1rem",
+    boxShadow: "0 6px 12px rgba(255, 102, 204, 0.4)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #ff4dc4, #ff80d5)",
+      boxShadow: "0 8px 16px rgba(255, 102, 204, 0.5)",
+      transform: "translateY(-2px)",
+    },
+    transition: "all 0.3s ease",
+  }}
+>
+  {loading ? "Changement en cours..." : "Changer le mot de passe"}
+</Button>
               </Stack>
             </form>
 
-            <Divider
-              sx={{
-                my: 4,
-                color: "text.secondary",
-                "&::before, &::after": {
-                  borderColor: "rgba(255, 102, 204, 0.3)",
-                },
-              }}
-            >
-              ou
-            </Divider>
-
-            {/* Google login (désactivé) */}
-            <Box textAlign="center" sx={{ opacity: 0.7, pointerEvents: "none" }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<FcGoogle size={20} />}
-                sx={{
-                  borderRadius: 2,
-                  py: 1.5,
-                  fontWeight: "bold",
-                  bgcolor: "white",
-                  color: "text.primary",
-                  borderColor: "rgba(255, 102, 204, 0.3)",
-                  "&:hover": {
-                    borderColor: "#ff66cc",
-                    bgcolor: "rgba(255, 102, 204, 0.05)",
-                  },
-                }}
-              >
-                Connexion avec Google (désactivée)
-              </Button>
-            </Box>
-
             <Box textAlign="center" mt={3}>
               <Typography variant="body2" color="text.secondary">
-                Pas encore inscrit ?{" "}
+                Retour à la{" "}
                 <Link
-                  href="/signup"
+                  href="/login"
                   style={{
                     color: "#ff66cc",
                     fontWeight: "bold",
                   }}
                 >
-                  Créer un compte
+                  connexion
+                </Link>
+              </Typography>
+            </Box>
+
+            <Box textAlign="center" mt={1}>
+              <Typography variant="body2" color="text.secondary">
+                Besoin d'aide ?{" "}
+                <Link
+                  href="/contact"
+                  style={{
+                    color: "#ff66cc",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Contactez-nous
                 </Link>
               </Typography>
             </Box>
@@ -337,7 +297,6 @@ export default function LoginForm() {
         </Container>
       </Box>
 
-      {/* FOOTER */}
       <Footer />
     </>
   );

@@ -42,7 +42,6 @@ export const ContactFormSection: React.FC<ContactFormSectionProps> = ({
   const [loading, setLoading] = React.useState(false);
   const [captchaToken, setCaptchaToken] = React.useState<string | null>(null);
 
-  // 🔹 feedback
   const [feedbackMessage, setFeedbackMessage] = React.useState<string | null>(
     null
   );
@@ -50,7 +49,6 @@ export const ContactFormSection: React.FC<ContactFormSectionProps> = ({
     "success" | "error" | null
   >(null);
 
-  // Pré-remplissage
   React.useEffect(() => {
     const fetchClient = async () => {
       try {
@@ -127,14 +125,12 @@ export const ContactFormSection: React.FC<ContactFormSectionProps> = ({
 
   return (
     <Grid>
-      {/* Image à gauche */}
       <Stack spacing={2} sx={{ p: 3 }}>
         <RoundedImage>
           <img src={imageUrl} alt="contact visual" />
         </RoundedImage>
       </Stack>
 
-      {/* Formulaire à droite */}
       <Box sx={{ mt: 2, p: 3 }}>
         <Stack spacing={2}>
           <TextField
@@ -191,7 +187,6 @@ export const ContactFormSection: React.FC<ContactFormSectionProps> = ({
             <MenuItem value="QUENTIN">Quentin</MenuItem>
           </TextField>
 
-          {/* reCAPTCHA */}
           <ReCAPTCHA sitekey={SITE_KEY} onChange={setCaptchaToken} />
 
           <SubmitButton onClick={handleSubmit} disabled={loading}>
