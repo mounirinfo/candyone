@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
+import { supabase } from "@/lib/supabaseBrowserClient"; // 👈 import du client global
 
 interface FormData {
   email: string;
@@ -37,43 +38,42 @@ export default function LoginForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
- const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setError(null);
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
 
-  if (!formData.email || !formData.password) {
-    setError("Veuillez remplir tous les champs.");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      setError(data.error || "Échec de la connexion");
+    if (!formData.email || !formData.password) {
+      setError("Veuillez remplir tous les champs.");
       return;
     }
 
-    // ✅ Connexion réussie
-    console.log("Utilisateur :", data.user);
-    console.log("Rôle :", data.role);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-    // Redirection selon la réponse API
-    window.location.href = data.redirectTo || "/profile";
-  } catch (err) {
-    setError("Erreur réseau, veuillez réessayer.");
-  } finally {
-    setLoading(false);
-  }
-};
+      const data = await res.json();
 
+      if (!res.ok) {
+        setError(data.error || "Échec de la connexion");
+        return;
+      }
+
+      // ✅ Connexion réussie
+      console.log("Utilisateur :", data.user);
+      console.log("Rôle :", data.role);
+
+      // Redirection selon la réponse API
+      window.location.href = data.redirectTo || "/profile";
+    } catch (err) {
+      setError("Erreur réseau, veuillez réessayer.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -81,10 +81,8 @@ export default function LoginForm() {
 
   return (
     <>
-      {/* HEADER */}
       <Header />
 
-      {/* BACKGROUND + FORM */}
       <Box
         sx={{
           minHeight: "100vh",
@@ -187,6 +185,7 @@ export default function LoginForm() {
               </Typography>
             )}
 
+            {/* Login classique */}
             <form onSubmit={handleSubmit}>
               <Stack spacing={3}>
                 <TextField
@@ -203,18 +202,6 @@ export default function LoginForm() {
                         <Mail size={20} color="#ff66cc" />
                       </InputAdornment>
                     ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                      "&:hover fieldset": {
-                        borderColor: "#ff66cc",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ff66cc",
-                        boxShadow: "0 0 0 2px rgba(255, 102, 204, 0.2)",
-                      },
-                    },
                   }}
                 />
 
@@ -235,7 +222,6 @@ export default function LoginForm() {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          aria-label="toggle password visibility"
                           onClick={togglePasswordVisibility}
                           edge="end"
                           sx={{ color: "#ff66cc" }}
@@ -245,77 +231,54 @@ export default function LoginForm() {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                      "&:hover fieldset": {
-                        borderColor: "#ff66cc",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ff66cc",
-                        boxShadow: "0 0 0 2px rgba(255, 102, 204, 0.2)",
-                      },
-                    },
-                  }}
                 />
 
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  sx={{
-                    background: "linear-gradient(135deg, #ff66cc, #ff99dd)",
-                    color: "white",
-                    fontWeight: "bold",
-                    borderRadius: 2,
-                    py: 1.5,
-                    fontSize: "1.1rem",
-                    boxShadow: "0 6px 12px rgba(255, 102, 204, 0.4)",
-                    "&:hover": {
-                      background: "linear-gradient(135deg, #ff4dc4, #ff80d5)",
-                      boxShadow: "0 8px 16px rgba(255, 102, 204, 0.5)",
-                      transform: "translateY(-2px)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                >
+                <Box textAlign="right" mt={1}>
+                  <Typography variant="body2" color="text.secondary">
+                    <Link
+                      href="/profile/forgot-password"
+                      style={{
+                        color: "#ff66cc",
+                        fontWeight: "500",
+                        textDecoration: "none",
+                      }}
+                    >
+                      Mot de passe oublié ?
+                    </Link>
+                  </Typography>
+                </Box>
+
+                <Button type="submit" variant="contained" disabled={loading}>
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
               </Stack>
             </form>
 
-            <Divider
-              sx={{
-                my: 4,
-                color: "text.secondary",
-                "&::before, &::after": {
-                  borderColor: "rgba(255, 102, 204, 0.3)",
-                },
-              }}
-            >
-              ou
-            </Divider>
+            <Divider sx={{ my: 4 }}>ou</Divider>
 
-            {/* Google login (désactivé) */}
-            <Box textAlign="center" sx={{ opacity: 0.7, pointerEvents: "none" }}>
+            <Box textAlign="center">
               <Button
                 fullWidth
                 variant="outlined"
                 startIcon={<FcGoogle size={20} />}
+                onClick={async () => {
+                 await supabase.auth.signInWithOAuth({
+  provider: "google",
+  options: {
+    redirectTo: `${window.location.origin}/profile`,
+    flow: "implicit",
+  } as any,
+                  
+                  });
+                }}
                 sx={{
                   borderRadius: 2,
                   py: 1.5,
                   fontWeight: "bold",
                   bgcolor: "white",
-                  color: "text.primary",
-                  borderColor: "rgba(255, 102, 204, 0.3)",
-                  "&:hover": {
-                    borderColor: "#ff66cc",
-                    bgcolor: "rgba(255, 102, 204, 0.05)",
-                  },
                 }}
               >
-                Connexion avec Google (désactivée)
+                Connexion avec Google
               </Button>
             </Box>
 
@@ -337,7 +300,6 @@ export default function LoginForm() {
         </Container>
       </Box>
 
-      {/* FOOTER */}
       <Footer />
     </>
   );

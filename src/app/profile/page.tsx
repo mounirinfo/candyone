@@ -166,11 +166,11 @@ export default function ProfilePage() {
               }}
             >
               <Typography variant="h3" fontWeight="bold">
-                {client.prenom} {client.nom}
+                {client?.prenom && client?.nom ? `${client.prenom} ${client.nom}` : "use client"}
               </Typography>
               <Stack direction="row" justifyContent="center" spacing={1} mt={1}>
                 <MailIcon fontSize="small" />
-                <Typography>{client.email}</Typography>
+                <Typography>{client?.email ?? "use client"}</Typography>
               </Stack>
             </Box>
 
@@ -189,13 +189,13 @@ export default function ProfilePage() {
                   </Avatar>
                   <Box>
                     <Typography fontWeight="500">Date de naissance</Typography>
-                    <Typography>{client.date_naissance}</Typography>
+                    <Typography>{client?.date_naissance ?? "use client"}</Typography>
                   </Box>
                 </Stack>
               </Stack>
 
               <Stack spacing={3} flex={1}>
-                {adresses?.length > 0 && (
+                {adresses?.length > 0 ? (
                   <Stack direction="row" spacing={2}>
                     <Avatar>
                       <MapPinIcon sx={{ color: primaryColor }} />
@@ -203,9 +203,20 @@ export default function ProfilePage() {
                     <Box>
                       <Typography fontWeight="500">Adresse</Typography>
                       <Typography>
-                        {adresses[0].adresse.ligne1}, {adresses[0].adresse.ville}{" "}
-                        {adresses[0].adresse.code_postal}
+                        {adresses[0]?.adresse?.ligne1 && adresses[0]?.adresse?.ville && adresses[0]?.adresse?.code_postal
+                          ? `${adresses[0].adresse.ligne1}, ${adresses[0].adresse.ville} ${adresses[0].adresse.code_postal}`
+                          : "use client"}
                       </Typography>
+                    </Box>
+                  </Stack>
+                ) : (
+                  <Stack direction="row" spacing={2}>
+                    <Avatar>
+                      <MapPinIcon sx={{ color: primaryColor }} />
+                    </Avatar>
+                    <Box>
+                      <Typography fontWeight="500">Adresse</Typography>
+                      <Typography>use client</Typography>
                     </Box>
                   </Stack>
                 )}
@@ -215,13 +226,12 @@ export default function ProfilePage() {
                   </Avatar>
                   <Box>
                     <Typography fontWeight="500">Téléphone</Typography>
-                    <Typography>{client.telephone}</Typography>
+                    <Typography>{client?.telephone ?? "use client"}</Typography>
                   </Box>
                 </Stack>
               </Stack>
             </Box>
 
-            {/* Boutons actions */}
             <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 3, flexWrap: "wrap" }}>
               <Button
                 variant="contained"
@@ -247,8 +257,7 @@ export default function ProfilePage() {
             </Stack>
           </Card>
 
-          {/* Section Abonnement */}
-          {abonnement && (
+          {abonnement ? (
             <Card sx={{ mb: 4, p: 4 }}>
               <Typography variant="h4" textAlign="center" fontWeight="bold" mb={3}>
                 Mon Abonnement
@@ -256,59 +265,91 @@ export default function ProfilePage() {
               <Stack spacing={3}>
                 <Chip label="En attente de paiement" color="warning" />
                 <Typography>
-                  Début : {new Date(abonnement.date_debut).toLocaleDateString()}
+                  Début : {abonnement?.date_debut ? new Date(abonnement.date_debut).toLocaleDateString() : "use client"}
                 </Typography>
-                {abonnement.date_fin && (
+                {abonnement?.date_fin ? (
                   <Typography>
                     Fin : {new Date(abonnement.date_fin).toLocaleDateString()}
                   </Typography>
+                ) : (
+                  <Typography>Fin : use client</Typography>
                 )}
               </Stack>
 
               <Divider sx={{ my: 3 }} />
 
               <Stack direction={{ xs: "column", md: "row" }} spacing={3}>
-                {club && (
+                {club ? (
                   <Card sx={{ flex: 1, p: 2 }}>
                     <ClubIcon sx={{ color: primaryColor }} />
-                    <Typography variant="h6">{club.nom}</Typography>
-                    {club.email_contact && <Typography>{club.email_contact}</Typography>}
-                    {club.telephone && <Typography>{club.telephone}</Typography>}
+                    <Typography variant="h6">{club?.nom ?? "use client"}</Typography>
+                    <Typography>{club?.email_contact ?? "use client"}</Typography>
+                    <Typography>{club?.telephone ?? "use client"}</Typography>
+                  </Card>
+                ) : (
+                  <Card sx={{ flex: 1, p: 2 }}>
+                    <ClubIcon sx={{ color: primaryColor }} />
+                    <Typography variant="h6">use client</Typography>
+                    <Typography>use client</Typography>
+                    <Typography>use client</Typography>
                   </Card>
                 )}
 
-                {formule && (
+                {formule ? (
                   <Card sx={{ flex: 1, p: 2 }}>
                     <PlanIcon sx={{ color: primaryColor }} />
-                    <Typography variant="h6">{formule.nom}</Typography>
+                    <Typography variant="h6">{formule?.nom ?? "use client"}</Typography>
                     <Typography color={primaryColor}>
-                      {(formule.prix_cents / 100).toFixed(2)} {formule.devise}
+                      {formule?.prix_cents ? (formule.prix_cents / 100).toFixed(2) : "use client"} {formule?.devise ?? "use client"}
                     </Typography>
-                    <Typography>{formule.description}</Typography>
+                    <Typography>{formule?.description ?? "use client"}</Typography>
+                  </Card>
+                ) : (
+                  <Card sx={{ flex: 1, p: 2 }}>
+                    <PlanIcon sx={{ color: primaryColor }} />
+                    <Typography variant="h6">use client</Typography>
+                    <Typography color={primaryColor}>use client</Typography>
+                    <Typography>use client</Typography>
                   </Card>
                 )}
               </Stack>
 
-              {options?.length > 0 && (
+              {options?.length > 0 ? (
                 <>
                   <Divider sx={{ my: 3 }} />
                   <Typography variant="h6">Options supplémentaires</Typography>
                   <Stack direction="row" spacing={2} flexWrap="wrap" mt={1}>
                     {options.map((o: any) => (
                       <Chip
-                        key={o.option.id}
-                        label={`${o.option.libelle} - ${(o.option.prix_cents / 100).toFixed(2)} ${formule?.devise}`}
+                        key={o?.option?.id ?? Math.random()}
+                        label={
+                          o?.option?.libelle && o?.option?.prix_cents && formule?.devise
+                            ? `${o.option.libelle} - ${(o.option.prix_cents / 100).toFixed(2)} ${formule.devise}`
+                            : "use client"
+                        }
                         sx={{ borderColor: primaryColor }}
                         variant="outlined"
                       />
                     ))}
                   </Stack>
                 </>
+              ) : (
+                <>
+                  <Divider sx={{ my: 3 }} />
+                  <Typography variant="h6">Options supplémentaires</Typography>
+                  <Typography>use client</Typography>
+                </>
               )}
+            </Card>
+          ) : (
+            <Card sx={{ mb: 4, p: 4 }}>
+              <Typography variant="h4" textAlign="center" fontWeight="bold" mb={3}>
+                Mon Abonnement
+              </Typography>
+              <Typography>use client</Typography>
             </Card>
           )}
 
-          {/* Formulaire callback */}
           {showCallback && (
             <Card sx={{ mb: 4, p: 4 }}>
               <Typography variant="h5" mb={2}>

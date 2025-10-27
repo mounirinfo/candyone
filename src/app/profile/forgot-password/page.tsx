@@ -1,7 +1,7 @@
 "use client";
 
 import React, { FormEvent, useState } from "react";
-import { Mail, Heart, ArrowLeft } from "lucide-react";
+import { Mail, ArrowRight, Heart } from "lucide-react";
 import {
   Box,
   Container,
@@ -11,44 +11,36 @@ import {
   Button,
   Stack,
   InputAdornment,
-  IconButton,
+  Alert,
 } from "@mui/material";
 import Link from "next/link";
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
-import { forgotPasswordAction } from "@/actions/forgot-password/actions";
+import { supabase } from "@/lib/supabaseBrowserClient";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
     setMessage(null);
-
-    if (!email) {
-      setError("Veuillez saisir votre adresse email.");
-      return;
-    }
-
+    setError(null);
     setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("email", email);
 
-      await forgotPasswordAction(formData);
-      
-      // Si l'action réussit
-      setMessage("Un lien de réinitialisation a été envoyé à votre adresse email.");
-      setEmail("");
-    } catch (err) {
-      setError("Une erreur est survenue. Veuillez réessayer.");
-    } finally {
-      setLoading(false);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/profile/reset-password`,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setMessage("✅ Un lien de réinitialisation a été envoyé à ton adresse email.");
     }
+
+    setLoading(false);
   };
 
   return (
@@ -102,6 +94,7 @@ export default function ForgotPasswordPage() {
               },
             }}
           >
+            {/* Icône décorative */}
             <Box sx={{ textAlign: "center", mb: 2 }}>
               <Box
                 sx={{
@@ -120,21 +113,6 @@ export default function ForgotPasswordPage() {
               </Box>
             </Box>
 
-            <Box sx={{ mb: 3 }}>
-              <Link href="/login">
-                <IconButton
-                  sx={{
-                    color: "#ff66cc",
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 102, 204, 0.1)",
-                    },
-                  }}
-                >
-                  <ArrowLeft size={20} />
-                </IconButton>
-              </Link>
-            </Box>
-
             <Box textAlign="center" mb={4}>
               <Typography
                 variant="h3"
@@ -151,40 +129,34 @@ export default function ForgotPasswordPage() {
                 Mot de passe oublié
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Saisissez votre email pour réinitialiser votre mot de passe
+                Entre ton adresse email pour recevoir un lien de réinitialisation
               </Typography>
             </Box>
 
             {error && (
-              <Typography
-                color="error"
-                align="center"
-                mb={2}
-                sx={{
-                  p: 1.5,
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  mb: 3,
                   borderRadius: 2,
-                  bgcolor: "rgba(255, 102, 204, 0.1)",
                   border: "1px solid #ff66cc",
                 }}
               >
                 {error}
-              </Typography>
+              </Alert>
             )}
 
             {message && (
-              <Typography
-                color="success.main"
-                align="center"
-                mb={2}
-                sx={{
-                  p: 1.5,
+              <Alert 
+                severity="success" 
+                sx={{ 
+                  mb: 3,
                   borderRadius: 2,
-                  bgcolor: "rgba(76, 175, 80, 0.1)",
                   border: "1px solid #4caf50",
                 }}
               >
                 {message}
-              </Typography>
+              </Alert>
             )}
 
             <form onSubmit={handleSubmit}>
@@ -192,7 +164,6 @@ export default function ForgotPasswordPage() {
                 <TextField
                   fullWidth
                   required
-                  name="email"
                   label="Adresse Email"
                   type="email"
                   value={email}
@@ -204,38 +175,18 @@ export default function ForgotPasswordPage() {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                      "&:hover fieldset": {
-                        borderColor: "#ff66cc",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#ff66cc",
-                        boxShadow: "0 0 0 2px rgba(255, 102, 204, 0.2)",
-                      },
-                    },
-                  }}
                 />
 
-                <Button
-                  type="submit"
-                  variant="contained"
+                <Button 
+                  type="submit" 
+                  variant="contained" 
                   disabled={loading}
+                  endIcon={<ArrowRight size={20} />}
                   sx={{
                     background: "linear-gradient(135deg, #ff66cc, #ff99dd)",
-                    color: "white",
-                    fontWeight: "bold",
-                    borderRadius: 2,
-                    py: 1.5,
-                    fontSize: "1.1rem",
-                    boxShadow: "0 6px 12px rgba(255, 102, 204, 0.4)",
                     "&:hover": {
-                      background: "linear-gradient(135deg, #ff4dc4, #ff80d5)",
-                      boxShadow: "0 8px 16px rgba(255, 102, 204, 0.5)",
-                      transform: "translateY(-2px)",
+                      background: "linear-gradient(135deg, #ff4db8, #ff80d5)",
                     },
-                    transition: "all 0.3s ease",
                   }}
                 >
                   {loading ? "Envoi en cours..." : "Envoyer le lien"}
@@ -254,21 +205,6 @@ export default function ForgotPasswordPage() {
                   }}
                 >
                   connexion
-                </Link>
-              </Typography>
-            </Box>
-
-            <Box textAlign="center" mt={1}>
-              <Typography variant="body2" color="text.secondary">
-                Pas encore inscrit ?{" "}
-                <Link
-                  href="/signup"
-                  style={{
-                    color: "#ff66cc",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Créer un compte
                 </Link>
               </Typography>
             </Box>

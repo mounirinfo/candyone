@@ -79,10 +79,8 @@
 
     return (
         <>
-        {/* HEADER */}
         <Header />
 
-        {/* BACKGROUND + FORM */}
         <Box
             sx={{
             minHeight: "100vh",
@@ -130,7 +128,6 @@
                 },
                 }}
             >
-                {/* Icône décorative */}
                 <Box sx={{ textAlign: "center", mb: 2 }}>
                 <Box
                     sx={{
@@ -348,7 +345,6 @@
             </Container>
         </Box>
 
-        {/* FOOTER */}
         <Footer />
         </>
     );
