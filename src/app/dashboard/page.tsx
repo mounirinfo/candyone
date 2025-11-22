@@ -14,7 +14,10 @@ import {
   TableRow,
   Chip,
   LinearProgress,
-  Avatar
+  Avatar,
+  Select,
+  MenuItem,
+  FormControl
 } from "@mui/material";
 import {
   Phone as PhoneIcon,
@@ -64,13 +67,49 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
+  const handleStatusChange = async (callbackId: number, oldStatus: string, newStatus: string) => {
+    // Mise à jour optimiste de l'interface
+    setCallbacks(callbacks.map(cb => 
+      cb.id === callbackId ? { ...cb, statut: newStatus } : cb
+    ));
+
+    try {
+      const response = await fetch("/api/coach", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: callbackId, statut: newStatus }),
+      });
+
+      if (!response.ok) {
+        // En cas d'erreur, restaurer l'ancien statut
+        setCallbacks(callbacks.map(cb => 
+          cb.id === callbackId ? { ...cb, statut: oldStatus } : cb
+        ));
+        alert("Erreur lors de la mise à jour du statut");
+      }
+    } catch (err) {
+      // En cas d'erreur réseau, restaurer l'ancien statut
+      setCallbacks(callbacks.map(cb => 
+        cb.id === callbackId ? { ...cb, statut: oldStatus } : cb
+      ));
+      alert("Erreur de connexion lors de la modification");
+      console.error("Erreur:", err);
+    }
+  };
+
   const getStatusColor = (statut: string) => {
     switch (statut?.toLowerCase()) {
       case "actif":
       case "traité":
         return "success";
+      case "nouveau":
+        return "info";
+      case "rendez-vous":
       case "en attente":
         return "warning";
+      case "archivé":
       case "expiré":
       case "annulé":
         return "error";
@@ -156,7 +195,36 @@ export default function DashboardPage() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Chip label={cb.statut} size="small" color={getStatusColor(cb.statut)} />
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Chip 
+                              label={cb.statut || "nouveau"} 
+                              size="small" 
+                              color={getStatusColor(cb.statut)}
+                            />
+                            <FormControl size="small">
+                              <Select
+                                value=""
+                                displayEmpty
+                                onChange={(e) => handleStatusChange(cb.id, cb.statut, e.target.value)}
+                                sx={{
+                                  minWidth: 50,
+                                  '& .MuiSelect-select': {
+                                    padding: '4px 8px',
+                                    fontSize: '0.875rem'
+                                  }
+                                }}
+                                renderValue={() => "Modifier"}
+                              >
+                                <MenuItem value="" disabled>
+                                  <em>Changer le statut</em>
+                                </MenuItem>
+                                <MenuItem value="nouveau">🆕 Nouveau</MenuItem>
+                                <MenuItem value="rendez-vous">📅 Rendez-vous</MenuItem>
+                                <MenuItem value="traité">✅ Traité</MenuItem>
+                                <MenuItem value="archivé">📦 Archivé</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))}

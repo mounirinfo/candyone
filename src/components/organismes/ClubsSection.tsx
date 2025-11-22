@@ -30,7 +30,7 @@ export default function ClubsSection() {
           <Box  flex={1} minWidth={300} >
             <ClubCard
             
-              address="1 AVENUE GEORGES POMPIDOU"
+              address="1 AVENUE DU PRESIDENT GEORGE POMPIDOU"
               city="95120 ERMONT"
               color="#ff90d4"
             />
@@ -39,7 +39,7 @@ export default function ClubsSection() {
           <Box flex={1} minWidth={300} sx={{ mt: 6 }}>
             <ClubCard
               address="258 BOULEVARD DU HAVRE"
-              city="95120 ERMONT"
+              city="95220 PIERRELAYE"
               color="#60c4ff"
             />
           </Box>

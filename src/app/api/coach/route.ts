@@ -1,5 +1,5 @@
 // app/api/coach/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { cookies } from "next/headers";
 
@@ -42,4 +42,31 @@ export async function GET() {
   }
 
   return NextResponse.json(data || []);
+}
+
+// Nouvelle méthode PUT pour mettre à jour le statut
+export async function PUT(request: NextRequest) {
+  try {
+    const supabase = createServerSupabaseClient();
+    const { id, statut } = await request.json();
+
+    console.log("🔄 Mise à jour callback:", { id, statut });
+
+    const { data, error } = await supabase
+      .from("callback")
+      .update({ statut })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.error("❌ Erreur Supabase:", error);
+      throw error;
+    }
+
+    console.log("✅ Callback mis à jour:", data);
+    return NextResponse.json(data[0]);
+  } catch (err: any) {
+    console.error("❌ Erreur PUT /api/coach:", err.message);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
 }

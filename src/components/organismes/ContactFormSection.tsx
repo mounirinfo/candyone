@@ -166,25 +166,16 @@ export const ContactFormSection: React.FC<ContactFormSectionProps> = ({
             value={values.email ?? ""}
             onChange={handleChange("email")}
           />
+          
           <TextField
+            select
             label="Message"
-            variant="outlined"
-            multiline
-            rows={4}
             fullWidth
             value={values.message ?? ""}
             onChange={handleChange("message")}
-          />
-          <TextField
-            select
-            label="Coach souhaité"
-            fullWidth
-            value={values.coach ?? ""}
-            onChange={handleChange("coach")}
           >
-            <MenuItem value="GLORIA">Gloria</MenuItem>
-            <MenuItem value="EDUIN">Eduin</MenuItem>
-            <MenuItem value="QUENTIN">Quentin</MenuItem>
+            <MenuItem value="Je suis un membre Basic-Fit">Je suis un membre Basic-Fit</MenuItem>
+            <MenuItem value="Je ne suis pas membre Basic-Fit">Je ne suis pas membre Basic-Fit</MenuItem>
           </TextField>
 
           <ReCAPTCHA sitekey={SITE_KEY} onChange={setCaptchaToken} />

@@ -398,17 +398,6 @@ export default function ProfilePage() {
                   value={formValues.message ?? ""}
                   onChange={handleFormChange("message")}
                 />
-                <TextField
-                  select
-                  label="Coach souhaité"
-                  fullWidth
-                  value={formValues.coach ?? ""}
-                  onChange={handleFormChange("coach")}
-                >
-                  <MenuItem value="GLORIA">Gloria</MenuItem>
-                  <MenuItem value="EDUIN">Eduin</MenuItem>
-                  <MenuItem value="QUENTIN">Quentin</MenuItem>
-                </TextField>
 
                 <ReCAPTCHA sitekey={SITE_KEY} onChange={setCaptchaToken} />
 

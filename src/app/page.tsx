@@ -2,8 +2,8 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import Header from "@/components/organismes/Header"; 
-import Footer from "@/components/organismes/Footer"; 
+import Header from "@/components/organismes/Header";
+import Footer from "@/components/organismes/Footer";
 import { CssBaseline, Container, Box } from "@mui/material";
 import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
 import PersonIcon from "@mui/icons-material/Person";
@@ -29,12 +29,28 @@ export default function HomePage() {
 
   return (
     <>
-      <CssBaseline /> 
+      <CssBaseline />
       <Header />
 
-      <DiscoverCandyOneHero
-        rightImageUrl="/13.png"
-        onReserveHref="/checkout"
+      <ClubSelectorHero
+        backgroundUrl="salle1.jpg"
+        partnerNote="PARTENAIRE OFFICIEL BASIC-FIT"
+        clubs={[
+          {
+            id: "ermont-1",
+            address1: "1 AVENUE DU PRESIDENT GEORGE POMPIDOU",
+            address2: "95120 ERMONT",
+            accent: "pink",
+            onClick: () => handleClubSelect(),
+          },
+          {
+            id: "ermont-2",
+            address1: "258 BOULEVARD DU HAVRE",
+            address2: "95220 PIERRELAYE",
+            accent: "blue",
+            onClick: () => handleClubSelect(),
+          },
+        ]}
       />
 
       {/* 🎯 Section Confiseries */}
@@ -46,36 +62,28 @@ export default function HomePage() {
           selectedPlan={null}
         />
       </Box>
-
-      <ClubSelectorHero
-        backgroundUrl="salle1.jpg"
-        partnerNote="PARTENAIRE OFFICIEL BASIC-FIT"
-        clubs={[
-          {
-            id: "ermont-1",
-            address1: "1 AVENUE GEORGES POMPIDOU",
-            address2: "95120 ERMONT",
-            accent: "pink",
-            onClick: () => handleClubSelect(),
-          },
-          {
-            id: "ermont-2",
-            address1: "258 BOULEVARD DU HAVRE",
-            address2: "95120 ERMONT",
-            accent: "blue",
-            onClick: () => handleClubSelect(), 
-          },
-        ]}
-      />
-
+      <DiscoverCandyOneHero rightImageUrl="/13.png" onReserveHref="/checkout" />
       <BonusBasicFit
         leftImageUrl="/bonbon.png"
         rightImageUrl="/party.png"
         bullets={[
-          { strong: "Coaching personnalisé : jusqu’à 60 séances* adaptées à ton rythme", sub: "Des séances tout au long de l’année" },
-          { strong: "Plan d’entraînement individualisé", sub: "Un programme évolutif, mis à jour chaque mois" },
-          { strong: "Rendez-vous avec ton coach expert dédié", sub: "Des suivis réguliers pour avancer sereinement" },
-          { strong: "Analyse corporel : Muscle ou graisse ?", sub: "Analyse précise pour optimiser tes résultats." },
+          {
+            strong:
+              "Coaching personnalisé : jusqu’à 60 séances* adaptées à ton rythme",
+            sub: "Des séances tout au long de l’année",
+          },
+          {
+            strong: "Plan d’entraînement individualisé",
+            sub: "Un programme évolutif, mis à jour chaque mois",
+          },
+          {
+            strong: "Rendez-vous avec ton coach expert dédié",
+            sub: "Des suivis réguliers pour avancer sereinement",
+          },
+          {
+            strong: "Analyse corporel : Muscle ou graisse ?",
+            sub: "Analyse précise pour optimiser tes résultats.",
+          },
         ]}
       />
 
@@ -136,29 +144,11 @@ export default function HomePage() {
         onCta={() => alert("Expertisable – CTA")}
       />
 
-      {/* 🎯 Section Coachs */}
-      <Box id="coachs" mt={4}>
-        <PersonalTrainer
-          name="GLORIA"
-          role="PERSONAL TRAINER"
-          imageUrl="GLORIA.jpg"
-          features={[
-            "Perte de poids",
-            "Renforcement musculaire",
-            "Remise en forme",
-            "Anglais – Français – LSF",
-            "Coach diplômé d’état (BPJEPS)",
-            "Disponible sur Ermont & Pierrelaye",
-          ]}
-          footerText="Découvrez Gloria : Une personnalité pétillante qui saura vous orienter et vous permettra d’atteindre tout vos objectifs."
-        />
-      </Box>
-
       <Box mt={4}>
         <PersonalTrainer
           name="EDUIN"
           role="PERSONAL TRAINER"
-          imageUrl="EDUINE.jpg"
+          imageUrl="EDUIN.jpg"
           features={[
             "Perte de poids",
             "Renforcement musculaire",
@@ -167,15 +157,15 @@ export default function HomePage() {
             "Coach diplômé d’état (BPJEPS)",
             "Disponible sur Ermont & Pierrelaye",
           ]}
-          footerText="Découvrez Gloria : Une personnalité pétillante qui saura vous orienter et vous permettra d’atteindre tout vos objectifs."
+          footerText="Découvrez EDUIN : Une personnalité pétillante qui saura vous orienter et vous permettra d’atteindre tout vos objectifs."
         />
       </Box>
 
       <Box mt={4}>
         <PersonalTrainer
-          name="QUENTIN"
+          name="SALIM"
           role="PERSONAL TRAINER"
-          imageUrl="QUENTIN.jpg"
+          imageUrl="salim.png"
           features={[
             "Perte de poids",
             "Renforcement musculaire",
@@ -184,25 +174,36 @@ export default function HomePage() {
             " Coach diplomé d’état (CQP)",
             "Disponible sur Ermont & Pierrelaye",
           ]}
-          footerText="Découvrez Gloria : Une personnalité pétillante qui saura vous orienter et vous permettra d’atteindre tout vos objectifs."
+          footerText="Découvrez SALIM : Une personnalité pétillante qui saura vous orienter et vous permettra d’atteindre tout vos objectifs."
         />
       </Box>
 
       <RecipeSection
         imageUrl="recette.png"
         features={[
-          { icon: <CheckBoxOutlinedIcon />, title: "Une confiserie sur mesure", desc: "Un programme sportif sur-mesure qui répond à votre objectif." },
+          {
+            icon: <CheckBoxOutlinedIcon />,
+            title: "Une confiserie sur mesure",
+            desc: "Un programme sportif sur-mesure qui répond à votre objectif.",
+          },
           { icon: <PersonIcon />, title: "Confiseur individuel" },
-          { icon: <HandshakeIcon />, title: "Un dosage unique", desc: "Formule adaptée aux personnes à mobilité réduite ou en rééducation." },
-          { icon: <WhatshotIcon />, title: "Une cuisson parfaite", desc: "Des résultats à portée de main." },
+          {
+            icon: <HandshakeIcon />,
+            title: "Un dosage unique",
+            desc: "Formule adaptée aux personnes à mobilité réduite ou en rééducation.",
+          },
+          {
+            icon: <WhatshotIcon />,
+            title: "Une cuisson parfaite",
+            desc: "Des résultats à portée de main.",
+          },
           { icon: <SchoolIcon />, title: "Des experts" },
         ]}
       />
 
       <ContactFormSection imageUrl="formulaire.png" />
 
-      <Container maxWidth="lg" sx={{ mt: 4, minHeight: "70vh" }}>
-      </Container>
+      <Container maxWidth="lg" sx={{ mt: 4, minHeight: "70vh" }}></Container>
 
       <Footer />
     </>
