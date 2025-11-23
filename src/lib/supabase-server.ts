@@ -1,23 +1,36 @@
-import { createClient } from "@supabase/supabase-js";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+// lib/supabase-server.ts
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
-export const createServerSupabaseClient = (accessToken?: string) => {
-  if (accessToken) {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!, 
-      process.env.SUPABASE_SERVICE_ROLE_KEY!, 
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+export function createServerSupabaseClient() {
+  const cookieStore = cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        async get(name: string) {
+          const store = await cookieStore
+          return store.get(name)?.value
         },
-      }
-    );
-  }
-
-  return createServerComponentClient({
-    cookies: () => cookies(),
-  });
-};
+        async set(name: string, value: string, options: any) {
+          try {
+            const store = await cookieStore
+            store.set({ name, value, ...options })
+          } catch (error) {
+            // Ignore - peut arriver en mode lecture seule
+          }
+        },
+        async remove(name: string, options: any) {
+          try {
+            const store = await cookieStore
+            store.set({ name, value: '', ...options })
+          } catch (error) {
+            // Ignore
+          }
+        },
+      },
+    }
+  )
+}

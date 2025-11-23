@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   try {
     const supabase = createServerSupabaseClient();
     const body = await req.json();
-    const { clubId, abonnementId, options, coordonnees, acquisition } = body;
+    const { clubId, abonnementId, options, coordonnees, acquisition, prereservation } = body;
 
     if (!coordonnees?.email || !coordonnees?.password) {
       return NextResponse.json(
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
           client_id: client.id,
           club_id: clubId ?? null,
           reference: referenceContrat,
-          date_debut: new Date().toISOString().split("T")[0], // YYYY-MM-DD
+          date_debut: new Date().toISOString().split("T")[0], 
         },
       ])
       .select()
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
 
     if (contratError) throw contratError;
 
-    // 5️⃣ Liaison client ↔ adresse
+    // 5️⃣ Lien client-adresse
     const { error: linkError } = await supabase.from("client_adresse").insert([
       {
         client_id: client.id,
@@ -103,17 +103,23 @@ export async function POST(req: Request) {
     ]);
     if (linkError) throw linkError;
 
-    // 6️⃣ Création de l'abonnement lié au contrat
+    // 6️⃣ Création de l'abonnement avec gestion de la pré-réservation
+    const abonnementData: any = {
+      contrat_id: contrat.id,
+      club_id: clubId ?? null,
+      formule_id: abonnementId,
+      date_debut: new Date().toISOString().split("T")[0],
+    };
+
+    // ✅ Si pré-réservation, ajouter les frais (4.99€ = 499 centimes)
+    if (prereservation === true) {
+      abonnementData.prereservation_frais_cents = 499;
+      abonnementData.statut = "EN_ATTENTE"; // Statut en attente de paiement complet
+    }
+
     const { data: abonnement, error: abonnementError } = await supabase
       .from("abonnement")
-      .insert([
-        {
-          contrat_id: contrat.id,
-          club_id: clubId ?? null,
-          formule_id: abonnementId,
-          date_debut: new Date().toISOString().split("T")[0],
-        },
-      ])
+      .insert([abonnementData])
       .select()
       .single();
 
@@ -135,17 +141,19 @@ export async function POST(req: Request) {
       if (optionLinkError) throw optionLinkError;
     }
 
-    // ✅ Réponse finale
     return NextResponse.json({
       success: true,
-      message:
-        "Compte, contrat, abonnement et options créés avec succès. Vérifiez vos emails pour confirmer votre inscription.",
+      message: prereservation
+        ? "Pré-réservation effectuée avec succès ! Frais de 4,99€ appliqués. Vérifiez vos emails."
+        : "Compte, contrat, abonnement et options créés avec succès. Vérifiez vos emails pour confirmer votre inscription.",
       user,
       client,
       adresse,
       contrat,
       abonnement,
       options: options ?? [],
+      prereservation: prereservation || false,
+      prereservation_frais_euros: prereservation ? "4,99€" : null,
     });
   } catch (error: any) {
     console.error("❌ Erreur inscription :", error);

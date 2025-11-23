@@ -20,6 +20,8 @@ import {
   CircularProgress,
   Divider,
   styled,
+  Alert,
+  Chip,
 } from "@mui/material";
 import {
   Email as MailIcon,
@@ -27,6 +29,8 @@ import {
   Lock as LockIcon,
   Security as ShieldIcon,
   ArrowBack as ArrowBackIcon,
+  EventAvailable as CalendarIcon,
+  Payment as PaymentIcon,
 } from "@mui/icons-material";
 
 import Header from "@/components/organismes/Header";
@@ -36,7 +40,6 @@ import { useCheckoutStore } from "@/stores/useCheckoutStore";
 
 const primaryColor = "#FB98F6";
 
-// ✅ Schéma de validation stricte
 const schema = yup.object().shape({
   email: yup.string().email("Email invalide").required("L'email est requis"),
   password: yup.string().min(8, "Minimum 8 caractères").required("Mot de passe requis"),
@@ -78,9 +81,25 @@ const GradientButton = styled(Button)({
   },
 });
 
+const OutlineButton = styled(Button)({
+  borderColor: primaryColor,
+  color: primaryColor,
+  borderRadius: 25,
+  padding: "12px 40px",
+  borderWidth: 2,
+  transition: "all 0.3s ease",
+  "&:hover": {
+    borderColor: primaryColor,
+    borderWidth: 2,
+    backgroundColor: "rgba(251, 152, 246, 0.1)",
+    transform: "scale(1.05)",
+  },
+});
+
 export default function CoordonneesPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [actionType, setActionType] = useState<"prereservation" | "paiement" | null>(null);
 
   const { updateData, setStep } = useCheckoutStore();
 
@@ -99,6 +118,8 @@ export default function CoordonneesPage() {
   });
 
   const onSubmit = async (formData: any) => {
+    if (!actionType) return;
+
     setIsLoading(true);
     updateData({ coordonnees: formData });
     const fullState = useCheckoutStore.getState();
@@ -107,7 +128,10 @@ export default function CoordonneesPage() {
       const res = await fetch("/api/checkout/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(fullState.data),
+        body: JSON.stringify({
+          ...fullState.data,
+          prereservation: actionType === "prereservation",
+        }),
       });
 
       const result = await res.json();
@@ -117,7 +141,14 @@ export default function CoordonneesPage() {
         return;
       }
 
-      router.push("/inscription/success");
+      // Redirection selon le type d'action
+      if (actionType === "prereservation") {
+        // Pré-réservation : aller vers le profil
+        router.push("/profile?prereservation=success");
+      } else {
+        // Paiement direct : aller vers la page de paiement
+        router.push("/checkout/paiement");
+      }
     } catch (error) {
       alert("Impossible de contacter le serveur");
     } finally {
@@ -128,6 +159,14 @@ export default function CoordonneesPage() {
   const handleBack = () => {
     setStep(2);
     router.back();
+  };
+
+  const handlePrereservation = () => {
+    setActionType("prereservation");
+  };
+
+  const handlePaiement = () => {
+    setActionType("paiement");
   };
 
   return (
@@ -165,7 +204,6 @@ export default function CoordonneesPage() {
         <Container maxWidth="md">
           <Card sx={{ borderRadius: 3, boxShadow: 3, backgroundColor: "rgba(255, 255, 255, 0.95)" }}>
             <CardContent sx={{ p: 4 }}>
-              {/* ✅ Stepper uniformisé */}
               <CheckoutStepper activeStep={3} />
 
               <Box sx={{ textAlign: "center", mb: 4 }}>
@@ -422,21 +460,63 @@ export default function CoordonneesPage() {
                   />
                 </Box>
 
-                {/* Boutons */}
-                <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2 }}>
+                {/* Alert info pré-réservation */}
+                <Alert severity="info" sx={{ mb: 3 }}>
+                  <Typography variant="body2" fontWeight="500" mb={1}>
+                    Choisissez votre option :
+                  </Typography>
+                  <Typography variant="body2">
+                    • <strong>Pré-réserver</strong> : Frais de 4,99€ pour réserver votre place, paiement complet ultérieur
+                  </Typography>
+                  <Typography variant="body2">
+                    • <strong>Payer maintenant</strong> : Accès immédiat en réglant l'intégralité
+                  </Typography>
+                </Alert>
+
+                {/* Boutons d'action */}
+                <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2, mb: 2 }}>
                   <Button variant="outlined" onClick={handleBack} startIcon={<ArrowBackIcon />}>
                     Retour
                   </Button>
-                  <GradientButton type="submit" disabled={!isValid || isLoading}>
-                    {isLoading ? (
+                  
+                  <OutlineButton
+                    type="submit"
+                    disabled={!isValid || isLoading}
+                    onClick={handlePrereservation}
+                    startIcon={<CalendarIcon />}
+                    sx={{ flex: 1 }}
+                  >
+                    {isLoading && actionType === "prereservation" ? (
                       <>
-                        <CircularProgress size={20} sx={{ mr: 1, color: "white" }} /> Inscription en cours...
+                        <CircularProgress size={20} sx={{ mr: 1 }} /> Traitement...
                       </>
                     ) : (
-                      "S'inscrire"
+                      <>
+                        Pré-réserver (4,99€)
+                      </>
+                    )}
+                  </OutlineButton>
+
+                  <GradientButton
+                    type="submit"
+                    disabled={!isValid || isLoading}
+                    onClick={handlePaiement}
+                    startIcon={<PaymentIcon />}
+                    sx={{ flex: 1 }}
+                  >
+                    {isLoading && actionType === "paiement" ? (
+                      <>
+                        <CircularProgress size={20} sx={{ mr: 1, color: "white" }} /> Traitement...
+                      </>
+                    ) : (
+                      "Payer maintenant"
                     )}
                   </GradientButton>
                 </Box>
+
+                <Typography variant="caption" color="text.secondary" align="center" display="block">
+                  En cliquant sur l'un des boutons, vous acceptez nos conditions générales
+                </Typography>
               </form>
             </CardContent>
           </Card>

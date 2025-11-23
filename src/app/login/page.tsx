@@ -18,7 +18,7 @@ import {
 import Link from "next/link";
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
-import { supabase } from "@/lib/supabaseBrowserClient"; // 👈 import du client global
+import { supabase } from "@/lib/supabaseBrowserClient";
 
 interface FormData {
   email: string;
@@ -33,6 +33,7 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -62,11 +63,15 @@ export default function LoginForm() {
         return;
       }
 
-      // ✅ Connexion réussie
       console.log("Utilisateur :", data.user);
       console.log("Rôle :", data.role);
 
-      // Redirection selon la réponse API
+      if (data.access_token && data.refresh_token) {
+        document.cookie = `sb-access-token=${data.access_token}; path=/; max-age=3600; SameSite=Lax`;
+        document.cookie = `sb-refresh-token=${data.refresh_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+        console.log("🍪 Tokens stockés dans les cookies");
+      }
+
       window.location.href = data.redirectTo || "/profile";
     } catch (err) {
       setError("Erreur réseau, veuillez réessayer.");
@@ -77,6 +82,42 @@ export default function LoginForm() {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  // ✅ Flow Implicit pour Google OAuth
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setError(null);
+
+    try {
+      console.log("🚀 Démarrage connexion Google...");
+      
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+          skipBrowserRedirect: false,
+        },
+      });
+
+      if (oauthError) {
+        console.error("❌ Erreur OAuth:", oauthError);
+        setError("Impossible de se connecter avec Google");
+        setGoogleLoading(false);
+        return;
+      }
+
+      console.log("✅ Redirection vers Google...", data);
+      // L'utilisateur sera redirigé automatiquement
+    } catch (err) {
+      console.error("💥 Erreur inattendue:", err);
+      setError("Une erreur est survenue lors de la connexion avec Google");
+      setGoogleLoading(false);
+    }
   };
 
   return (
@@ -130,7 +171,6 @@ export default function LoginForm() {
               },
             }}
           >
-            {/* Icône décorative */}
             <Box sx={{ textAlign: "center", mb: 2 }}>
               <Box
                 sx={{
@@ -185,7 +225,6 @@ export default function LoginForm() {
               </Typography>
             )}
 
-            {/* Login classique */}
             <form onSubmit={handleSubmit}>
               <Stack spacing={3}>
                 <TextField
@@ -248,7 +287,21 @@ export default function LoginForm() {
                   </Typography>
                 </Box>
 
-                <Button type="submit" variant="contained" disabled={loading}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading || googleLoading}
+                  sx={{
+                    background: "linear-gradient(135deg, #ff66cc, #ff99dd)",
+                    color: "white",
+                    fontWeight: "bold",
+                    py: 1.5,
+                    borderRadius: 2,
+                    "&:hover": {
+                      background: "linear-gradient(135deg, #ff4db8, #ff66cc)",
+                    },
+                  }}
+                >
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
               </Stack>
@@ -261,24 +314,28 @@ export default function LoginForm() {
                 fullWidth
                 variant="outlined"
                 startIcon={<FcGoogle size={20} />}
-                onClick={async () => {
-                 await supabase.auth.signInWithOAuth({
-  provider: "google",
-  options: {
-    redirectTo: `${window.location.origin}/profile`,
-    flow: "implicit",
-  } as any,
-                  
-                  });
-                }}
+                disabled={googleLoading || loading}
+                onClick={handleGoogleLogin}
                 sx={{
                   borderRadius: 2,
                   py: 1.5,
                   fontWeight: "bold",
                   bgcolor: "white",
+                  border: "2px solid #e0e0e0",
+                  color: "#333",
+                  "&:hover": {
+                    border: "2px solid #ff66cc",
+                    bgcolor: "rgba(255, 102, 204, 0.05)",
+                  },
+                  "&:disabled": {
+                    bgcolor: "#f5f5f5",
+                    color: "#999",
+                  },
                 }}
               >
-                Connexion avec Google
+                {googleLoading
+                  ? "Redirection vers Google..."
+                  : "Connexion avec Google"}
               </Button>
             </Box>
 
@@ -290,6 +347,7 @@ export default function LoginForm() {
                   style={{
                     color: "#ff66cc",
                     fontWeight: "bold",
+                    textDecoration: "none",
                   }}
                 >
                   Créer un compte

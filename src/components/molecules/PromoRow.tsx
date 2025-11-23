@@ -16,7 +16,7 @@ export const PromoRowComponent: React.FC = () => (
     <Typography sx={{ fontWeight: 900, fontSize: 34 }}>ON T’OFFRE</Typography>
     <Stamp>
       <Typography variant="caption" sx={{ fontWeight: 700 }}>L’ABONNEMENT</Typography>
-      <Box component="img" src="/assets/basicfit-stamp.png" alt="BASIC-FIT" sx={{ height: 24 }} />
+      <Box component="img" src="/basicfit.png" alt="BASIC-FIT" sx={{ height: 70 }} />
     </Stamp>
     <Typography sx={{ fontWeight: 900, fontSize: 28 }}>PENDANT</Typography>
     <BigWeeks>58 SEMAINES</BigWeeks>
