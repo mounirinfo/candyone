@@ -114,7 +114,7 @@ export async function POST(req: Request) {
     // ✅ Si pré-réservation, ajouter les frais (4.99€ = 499 centimes)
     if (prereservation === true) {
       abonnementData.prereservation_frais_cents = 499;
-      abonnementData.statut = "EN_ATTENTE"; // Statut en attente de paiement complet
+      abonnementData.statut = "PAUSE"; // Statut PAUSE en attendant le paiement complet
     }
 
     const { data: abonnement, error: abonnementError } = await supabase

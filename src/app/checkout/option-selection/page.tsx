@@ -1,3 +1,4 @@
+// app/checkout/option-selection/page.tsx
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,7 +18,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
 import { useCheckoutStore } from "@/stores/useCheckoutStore";
-import CheckoutStepper from "@/components/organismes/CheckoutStepper"; // ✅ import du Stepper réutilisable
+import CheckoutStepper from "@/components/organismes/CheckoutStepper";
 
 const primaryColor = "#FB98F6";
 
@@ -49,6 +50,7 @@ const OptionSelectionPage = () => {
 
   const [options, setOptions] = useState<Option[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkingUser, setCheckingUser] = useState(false);
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -91,9 +93,31 @@ const OptionSelectionPage = () => {
     }
   };
 
-  const handleNext = () => {
-    setStep(4);
-    router.push("/checkout/personal-informations");
+  const handleNext = async () => {
+    setCheckingUser(true);
+
+    try {
+      // Vérifier si l'utilisateur est connecté
+      const res = await fetch("/api/checkout/check-user");
+      const userData = await res.json();
+
+      if (userData.isConnected) {
+        // Utilisateur connecté → aller vers complétion de profil
+        setStep(4);
+        router.push("/checkout/complete-profile");
+      } else {
+        // Pas connecté → parcours normal (inscription)
+        setStep(4);
+        router.push("/checkout/personal-informations");
+      }
+    } catch (error) {
+      console.error("Erreur vérification utilisateur:", error);
+      // En cas d'erreur, on va vers l'inscription classique
+      setStep(4);
+      router.push("/checkout/personal-informations");
+    } finally {
+      setCheckingUser(false);
+    }
   };
 
   const handleBack = () => {
@@ -136,7 +160,6 @@ const OptionSelectionPage = () => {
             mb: { xs: 12, md: 8 },
           }}
         >
-          {/* ✅ Stepper réutilisable */}
           <CheckoutStepper activeStep={step - 1} />
 
           <Typography
@@ -268,6 +291,7 @@ const OptionSelectionPage = () => {
               variant="outlined"
               startIcon={<ArrowBackIcon />}
               onClick={handleBack}
+              disabled={checkingUser}
               sx={{
                 borderRadius: 2,
                 px: 4,
@@ -279,6 +303,7 @@ const OptionSelectionPage = () => {
             </Button>
             <GradientButton
               onClick={handleNext}
+              disabled={checkingUser}
               sx={{
                 px: 6,
                 "&.Mui-disabled": {
@@ -287,8 +312,17 @@ const OptionSelectionPage = () => {
                 },
               }}
             >
-              Finaliser ma sélection ({selected.length})
-              <CheckIcon sx={{ ml: 1.5 }} />
+              {checkingUser ? (
+                <>
+                  <CircularProgress size={20} sx={{ mr: 1, color: "white" }} />
+                  Vérification...
+                </>
+              ) : (
+                <>
+                  Finaliser ma sélection ({selected.length})
+                  <CheckIcon sx={{ ml: 1.5 }} />
+                </>
+              )}
             </GradientButton>
           </Box>
         </Container>
@@ -311,6 +345,7 @@ const OptionSelectionPage = () => {
       >
         <GradientButton
           onClick={handleNext}
+          disabled={checkingUser}
           fullWidth
           sx={{
             py: 2,
@@ -320,8 +355,17 @@ const OptionSelectionPage = () => {
             },
           }}
         >
-          Finaliser ma sélection ({selected.length})
-          <CheckIcon sx={{ ml: 1.5 }} />
+          {checkingUser ? (
+            <>
+              <CircularProgress size={20} sx={{ mr: 1, color: "white" }} />
+              Vérification...
+            </>
+          ) : (
+            <>
+              Finaliser ma sélection ({selected.length})
+              <CheckIcon sx={{ ml: 1.5 }} />
+            </>
+          )}
         </GradientButton>
       </Box>
 

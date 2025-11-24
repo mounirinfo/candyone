@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -21,7 +21,9 @@ export default function NavigationBar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   const navLinks = [
     { label: "Nos clubs", href: "/checkout", type: "link" },
@@ -29,43 +31,79 @@ export default function NavigationBar() {
     { label: "Les coachs", href: "#coachs", type: "scroll" },
   ];
 
-  // Récupérer l’utilisateur et son rôle
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch("/api/auth/me", {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) {
-          setUser(null);
-          setRole(null);
-          return;
-        }
-        const data = await res.json();
-        setUser(data.user);
-        setRole(data.user.role);
-      } catch (err) {
-        console.error("Erreur fetch user:", err);
+  // ✅ Fonction pour récupérer l'utilisateur
+  const fetchUser = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store", // ✅ Empêcher le cache
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      });
+
+      if (!res.ok) {
+        console.log("❌ Pas d'utilisateur connecté");
         setUser(null);
         setRole(null);
+        return;
       }
-    };
-    fetchUser();
-  }, []);
 
+      const data = await res.json();
+      console.log("✅ Utilisateur chargé:", data.user);
+      
+      setUser(data.user);
+      setRole(data.user.role);
+    } catch (err) {
+      console.error("❌ Erreur fetch user:", err);
+      setUser(null);
+      setRole(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Charger l'utilisateur au montage ET à chaque changement de route
+  useEffect(() => {
+    fetchUser();
+  }, [pathname]); // ✅ Recharger quand la route change
+
+  // ✅ Déconnexion améliorée
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/logout", { method: "POST" });
+      const res = await fetch("/api/logout", { // ✅ Bon chemin
+        method: "POST",
+        credentials: "include",
+      });
+
       if (res.ok) {
+        // ✅ Nettoyer l'état local
         setUser(null);
         setRole(null);
-        router.push("/");
+
+        // ✅ Nettoyer le localStorage
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // ✅ Nettoyer les cookies côté client
+        document.cookie.split(";").forEach((c) => {
+          document.cookie = c
+            .replace(/^ +/, "")
+            .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
+        });
+
+        // ✅ Redirection forcée avec reload
+        window.location.href = "/";
       } else {
-        console.error("Erreur déconnexion :", await res.text());
+        console.error("❌ Erreur déconnexion:", await res.text());
       }
     } catch (err) {
-      console.error("Erreur déconnexion :", err);
+      console.error("❌ Erreur déconnexion:", err);
+      // Rediriger quand même
+      window.location.href = "/";
     }
   };
 
@@ -90,6 +128,13 @@ export default function NavigationBar() {
     letterSpacing: "1px",
     fontSize: "1rem",
   };
+
+  // ✅ Afficher un état de chargement pour éviter le flash
+  const displayName = loading 
+    ? "..." 
+    : user 
+      ? `${user.prenom || "Utilisateur"} ${user.nom || ""}`.trim()
+      : "";
 
   return (
     <>
@@ -177,7 +222,7 @@ export default function NavigationBar() {
 
           {/* Boutons conditionnels */}
           <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 2 }}>
-            {!user ? (
+            {!user && !loading ? (
               <>
                 <Link href="/login" passHref>
                   <Button
@@ -203,11 +248,11 @@ export default function NavigationBar() {
                       "&:hover": { backgroundColor: "#e755b5" },
                     }}
                   >
-                    S’INSCRIRE
+                    S'INSCRIRE
                   </Button>
                 </Link>
               </>
-            ) : (
+            ) : user ? (
               <>
                 <Button
                   sx={{
@@ -218,13 +263,10 @@ export default function NavigationBar() {
                     "&:hover": { backgroundColor: "#d6f7f9" },
                   }}
                   onClick={() =>
-                    router.push(
-                      role === "client" ? "/profile" : "/dashboard"
-                    )
+                    router.push(role === "client" ? "/profile" : "/dashboard")
                   }
                 >
-                  Bonjour, {user.prenom || user.user_metadata?.prenom}{" "}
-                  {user.nom || user.user_metadata?.nom}
+                  Bonjour, {displayName}
                 </Button>
                 <Button
                   variant="outlined"
@@ -240,7 +282,7 @@ export default function NavigationBar() {
                   SE DÉCONNECTER
                 </Button>
               </>
-            )}
+            ) : null}
           </Box>
 
           {/* Menu Mobile */}
@@ -280,8 +322,8 @@ export default function NavigationBar() {
                 </ListItemButton>
               </ListItem>
             ))}
-            {/* Boutons auth */}
-            {!user ? (
+            {/* Boutons auth mobile */}
+            {!user && !loading ? (
               <>
                 <ListItem disablePadding>
                   <Link href="/login" passHref>
@@ -319,7 +361,7 @@ export default function NavigationBar() {
                       }}
                     >
                       <ListItemText
-                        primary="S’INSCRIRE"
+                        primary="S'INSCRIRE"
                         primaryTypographyProps={{
                           sx: {
                             fontWeight: "bold",
@@ -333,19 +375,17 @@ export default function NavigationBar() {
                   </Link>
                 </ListItem>
               </>
-            ) : (
+            ) : user ? (
               <>
                 <ListItem disablePadding>
                   <ListItemButton
                     sx={{ mt: 2, py: 1.5 }}
                     onClick={() =>
-                      router.push(
-                        role === "client" ? "/profile" : "/dashboard"
-                      )
+                      router.push(role === "client" ? "/profile" : "/dashboard")
                     }
                   >
                     <ListItemText
-                      primary={`Bonjour, ${user.prenom || user.user_metadata?.prenom} ${user.nom || user.user_metadata?.nom}`}
+                      primary={`Bonjour, ${displayName}`}
                       primaryTypographyProps={{
                         sx: {
                           fontWeight: "bold",
@@ -380,7 +420,7 @@ export default function NavigationBar() {
                   </ListItemButton>
                 </ListItem>
               </>
-            )}
+            ) : null}
           </List>
         </Box>
       </Drawer>

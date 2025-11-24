@@ -6,85 +6,92 @@ export async function GET() {
   try {
     const supabase = createServerSupabaseClient();
 
-    // ✅ Récupérer la session complète (avec tokens)
+    // ✅ Récupérer la session complète
     const {
       data: { session },
       error: sessionError,
     } = await supabase.auth.getSession();
 
-    if (sessionError || !session) {
+    if (sessionError) {
+      console.log("❌ Erreur session:", sessionError.message);
+      return NextResponse.json({ user: null }, { status: 401 });
+    }
+
+    if (!session) {
       console.log("❌ Pas de session valide");
       return NextResponse.json({ user: null }, { status: 401 });
     }
 
-    // ✅ Utiliser getUser() pour vérifier l'authenticité
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const user = session.user;
+    console.log("✅ Utilisateur authentifié:", user.email);
 
-    console.log("🔍 Utilisateur récupéré:", {
-      hasUser: !!user,
-      email: user?.email || "N/A",
-    });
-
-    if (userError || !user) {
-      console.log("❌ Pas d'utilisateur valide");
-      return NextResponse.json({ user: null }, { status: 401 });
-    }
-
-    console.log("✅ Utilisateur trouvé:", user.email);
-
-    // 🔍 Vérifier dans client
-    const { data: client } = await supabase
-      .from("client")
-      .select("*")
-      .eq("auth_id", user.id)
-      .maybeSingle();
-
-    // 🔍 Vérifier dans employe
+    // 🔍 Vérifier dans employe en premier (prioritaire)
     const { data: employe } = await supabase
       .from("employe")
-      .select("id, role, prenom, nom")
+      .select("id, role, prenom, nom, email")
       .eq("auth_id", user.id)
       .maybeSingle();
 
+    // 🔍 Vérifier dans client si pas employé
+    let client = null;
+    if (!employe) {
+      const { data: clientData } = await supabase
+        .from("client")
+        .select("*")
+        .eq("auth_id", user.id)
+        .maybeSingle();
+      client = clientData;
+    }
+
+    // ✅ Déterminer le rôle et le profil
     let role = "client";
     let redirectTo = "/profile";
-    let profile: any = client;
+    let profile: any = null;
 
     if (employe) {
       role = employe.role || "employe";
-      redirectTo = "/admin";
+      redirectTo = role === "admin" ? "/admin" : "/dashboard";
       profile = employe;
+      console.log("👤 Employé détecté:", { role });
+    } else if (client) {
+      profile = client;
+      console.log("👤 Client détecté");
+    } else {
+      console.log("⚠️ Aucun profil trouvé, création implicite possible");
     }
 
-    // ✅ Normaliser l'utilisateur
+    // ✅ Priorité stricte : BDD > user_metadata > fallback
+    const prenom = profile?.prenom || 
+                   user.user_metadata?.given_name || 
+                   user.user_metadata?.prenom ||
+                   user.user_metadata?.full_name?.split(" ")[0] ||
+                   user.email?.split("@")[0] ||
+                   "Utilisateur";
+
+    const nom = profile?.nom || 
+                user.user_metadata?.family_name ||
+                user.user_metadata?.nom ||
+                user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
+                "";
+
+    // ✅ Utilisateur normalisé (SANS inclure user_metadata pour éviter les conflits)
     const normalizedUser = {
-      ...user,
+      id: user.id,
+      email: user.email,
       role,
+      prenom,
+      nom,
       profile,
-      prenom:
-        profile?.prenom ||
-        user.user_metadata?.prenom ||
-        user.user_metadata?.full_name?.split(" ")[0] ||
-        user.email?.split("@")[0],
-      nom:
-        profile?.nom ||
-        user.user_metadata?.nom ||
-        user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
-        "",
+      created_at: user.created_at,
+      updated_at: user.updated_at,
     };
 
-    // 🔐 Récupérer toutes les sessions actives du compte (admin only avec service role)
-    // Note: Pour lister toutes les sessions, il faut utiliser le service role key
-    // Ici on retourne juste la session actuelle avec ses tokens
+    // 🔐 Tokens de session
     const tokens = {
       access_token: session.access_token,
       refresh_token: session.refresh_token,
       expires_at: session.expires_at,
       expires_in: session.expires_in,
-      token_type: session.token_type,
     };
 
     console.log("✅ Utilisateur normalisé:", {
@@ -94,17 +101,11 @@ export async function GET() {
       role: normalizedUser.role,
     });
 
-    console.log("🔐 Tokens de session:", {
-      hasAccessToken: !!tokens.access_token,
-      hasRefreshToken: !!tokens.refresh_token,
-      expiresAt: tokens.expires_at ? new Date(tokens.expires_at * 1000).toLocaleString() : "N/A",
-    });
-
     return NextResponse.json(
       {
         user: normalizedUser,
         redirectTo,
-        tokens, // ✅ Ajout des tokens
+        tokens,
       },
       { status: 200 }
     );

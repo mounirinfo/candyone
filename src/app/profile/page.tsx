@@ -13,6 +13,10 @@ import {
   Avatar,
   TextField,
   Alert,
+  Dialog,
+  DialogContent,
+  IconButton,
+  Fade,
 } from "@mui/material";
 import {
   SportsGymnastics as ClubIcon,
@@ -24,11 +28,16 @@ import {
   Lock as LockIcon,
   Warning as WarningIcon,
   Edit as EditIcon,
+  AddCircleOutline as AddIcon,
+  DeleteForever as DeleteIcon,
+  Close as CloseIcon,
+  ErrorOutline as ErrorIcon,
 } from "@mui/icons-material";
 import SubmitButton from "@/components/atoms/SubmitButton";
 import ReCAPTCHA from "react-google-recaptcha";
 import Header from "@/components/organismes/Header";
 import Footer from "@/components/organismes/Footer";
+import { useRouter } from "next/navigation";
 
 const primaryColor = "#FB98F6";
 const warningColor = "#fbbf24";
@@ -60,6 +69,7 @@ const DataDisplay = ({ value, fallback = "À renseigner" }: { value?: string | n
 };
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showCallback, setShowCallback] = useState(false);
@@ -68,6 +78,8 @@ export default function ProfilePage() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -141,6 +153,32 @@ export default function ProfilePage() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+
+    try {
+      const res = await fetch("/api/delete-account", {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Erreur lors de la suppression");
+      }
+
+      // Succès : rediriger vers la page d'accueil
+      alert("✅ Votre compte a été supprimé avec succès");
+      router.push("/");
+    } catch (err: any) {
+      console.error("Erreur suppression compte:", err);
+      alert(`❌ ${err.message || "Erreur lors de la suppression du compte"}`);
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -203,6 +241,7 @@ export default function ProfilePage() {
                   size="small" 
                   startIcon={<EditIcon />}
                   sx={{ color: warningColor }}
+                  onClick={() => router.push("/checkout/complete-profile")}
                 >
                   Compléter
                 </Button>
@@ -311,25 +350,51 @@ export default function ProfilePage() {
               justifyContent="center" 
               sx={{ mb: 3, px: 2 }}
             >
-              <Button
-                variant="contained"
-                sx={{
-                  background: `linear-gradient(135deg, ${primaryColor} 0%, #F06292 100%)`,
-                  color: "white",
-                  fontWeight: "bold",
-                  px: 3,
-                  py: 1.2,
-                  '&:hover': {
-                    background: `linear-gradient(135deg, #F06292 0%, ${primaryColor} 100%)`,
-                    transform: "translateY(-2px)",
-                    boxShadow: `0 6px 20px rgba(251, 152, 246, 0.4)`,
-                  },
-                  transition: "all 0.3s ease",
-                }}
-                onClick={() => (window.location.href = "/checkout/paiement")}
-              >
-                Payer mon abonnement
-              </Button>
+              {abonnement && (
+                <Button
+                  variant="contained"
+                  sx={{
+                    background: `linear-gradient(135deg, ${primaryColor} 0%, #F06292 100%)`,
+                    color: "white",
+                    fontWeight: "bold",
+                    px: 3,
+                    py: 1.2,
+                    '&:hover': {
+                      background: `linear-gradient(135deg, #F06292 0%, ${primaryColor} 100%)`,
+                      transform: "translateY(-2px)",
+                      boxShadow: `0 6px 20px rgba(251, 152, 246, 0.4)`,
+                    },
+                    transition: "all 0.3s ease",
+                  }}
+                  onClick={() => router.push("/checkout/paiement")}
+                >
+                  Payer mon abonnement
+                </Button>
+              )}
+              
+              {missingFields > 0 && (
+                <Button
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  sx={{
+                    background: `linear-gradient(135deg, ${warningColor} 0%, #f59e0b 100%)`,
+                    color: "white",
+                    fontWeight: "bold",
+                    px: 3,
+                    py: 1.2,
+                    '&:hover': {
+                      background: `linear-gradient(135deg, #f59e0b 0%, ${warningColor} 100%)`,
+                      transform: "translateY(-2px)",
+                      boxShadow: `0 6px 20px rgba(251, 191, 36, 0.4)`,
+                    },
+                    transition: "all 0.3s ease",
+                  }}
+                  onClick={() => router.push("/checkout/complete-profile")}
+                >
+                  Compléter mon profil
+                </Button>
+              )}
+              
               <Button
                 variant="outlined"
                 sx={{
@@ -349,6 +414,7 @@ export default function ProfilePage() {
               >
                 Être rappelé par un coach
               </Button>
+              
               <Button
                 variant="outlined"
                 startIcon={<LockIcon />}
@@ -365,9 +431,30 @@ export default function ProfilePage() {
                   },
                   transition: "all 0.3s ease",
                 }}
-                onClick={() => (window.location.href = "/profile/change-password")}
+                onClick={() => router.push("/profile/change-password")}
               >
                 Changer mon mot de passe
+              </Button>
+
+              <Button
+                variant="outlined"
+                startIcon={<DeleteIcon />}
+                sx={{
+                  borderColor: "#ef4444",
+                  color: "#ef4444",
+                  fontWeight: "bold",
+                  px: 3,
+                  py: 1.2,
+                  '&:hover': {
+                    borderColor: "#dc2626",
+                    bgcolor: "rgba(239, 68, 68, 0.1)",
+                    transform: "translateY(-2px)",
+                  },
+                  transition: "all 0.3s ease",
+                }}
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                Supprimer mon compte
               </Button>
             </Stack>
           </Card>
@@ -550,6 +637,8 @@ export default function ProfilePage() {
                 </Typography>
                 <Button 
                   variant="contained" 
+                  startIcon={<AddIcon />}
+                  onClick={() => router.push("/checkout")}
                   sx={{
                     background: `linear-gradient(135deg, ${primaryColor} 0%, #F06292 100%)`,
                     color: "white",
@@ -558,7 +647,10 @@ export default function ProfilePage() {
                     py: 1.5,
                     '&:hover': {
                       background: `linear-gradient(135deg, #F06292 0%, ${primaryColor} 100%)`,
-                    }
+                      transform: "translateY(-2px)",
+                      boxShadow: `0 6px 20px rgba(251, 152, 246, 0.4)`,
+                    },
+                    transition: "all 0.3s ease",
                   }}
                 >
                   Découvrir nos offres
@@ -690,6 +782,186 @@ export default function ProfilePage() {
               </Stack>
             </Card>
           )}
+
+          {/* Dialog Modal de confirmation suppression */}
+          <Dialog
+            open={showDeleteDialog}
+            onClose={() => !deleteLoading && setShowDeleteDialog(false)}
+            maxWidth="sm"
+            fullWidth
+            TransitionComponent={Fade}
+            PaperProps={{
+              sx: {
+                borderRadius: 4,
+                overflow: "visible",
+                position: "relative",
+              },
+            }}
+          >
+            {/* Bouton fermer */}
+            <IconButton
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleteLoading}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: "#9ca3af",
+                zIndex: 1,
+                "&:hover": {
+                  color: "#ef4444",
+                  bgcolor: "rgba(239, 68, 68, 0.1)",
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+
+            <DialogContent sx={{ p: 0, overflow: "hidden" }}>
+              {/* Header avec dégradé rouge */}
+              <Box
+                sx={{
+                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                  p: 4,
+                  textAlign: "center",
+                  position: "relative",
+                  overflow: "hidden",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 70%)",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                >
+                  <Box
+                   
+                  >
+                    <ErrorIcon sx={{ fontSize: 48, color: "white" }} />
+                  </Box>
+                  <Typography
+                    variant="h4"
+                    fontWeight="bold"
+                    color="white"
+                    mb={1}
+                  >
+                    Supprimer votre compte ?
+                  </Typography>
+                
+                </Box>
+              </Box>
+
+              {/* Contenu */}
+              <Box sx={{ p: 4 }}>
+               
+
+
+
+                <Stack spacing={1.5} mb={4}>
+                  {[
+                    "Vos informations personnelles (nom, email, téléphone)",
+                    "Vos abonnements et contrats en cours",
+                    "Votre historique de paiement et factures",
+                    "Vos options et préférences",
+                    "Toutes vos données de profil",
+                  ].map((item, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 1.5,
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: "#fef2f2",
+                        border: "1px solid #fecaca",
+                      }}
+                    >
+                      <DeleteIcon sx={{ color: "#ef4444", fontSize: 20, mt: 0.2 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        {item}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+
+                <Box
+                  sx={{
+                    bgcolor: "#fff7ed",
+                    border: "2px solid #fed7aa",
+                    borderRadius: 2,
+                    p: 3,
+                    mb: 4,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    fontWeight="600"
+                    color="#ea580c"
+                    textAlign="center"
+                  >
+                    💡 Vous ne pourrez plus récupérer votre compte après cette action
+                  </Typography>
+                </Box>
+
+                {/* Boutons d'action */}
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    onClick={() => setShowDeleteDialog(false)}
+                    disabled={deleteLoading}
+                    sx={{
+                      borderRadius: 2,
+                      py: 1.5,
+                      borderColor: "#d1d5db",
+                      color: "#6b7280",
+                      fontWeight: "600",
+                      "&:hover": {
+                        borderColor: "#9ca3af",
+                        bgcolor: "#f9fafb",
+                      },
+                    }}
+                  >
+                    Non, annuler
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={handleDeleteAccount}
+                    disabled={deleteLoading}
+                    startIcon={!deleteLoading && <DeleteIcon />}
+                    sx={{
+                      borderRadius: 2,
+                      py: 1.5,
+                      bgcolor: "#ef4444",
+                      fontWeight: "600",
+                      boxShadow: "0 4px 12px rgba(239, 68, 68, 0.4)",
+                      "&:hover": {
+                        bgcolor: "#dc2626",
+                        boxShadow: "0 6px 16px rgba(239, 68, 68, 0.5)",
+                      },
+                      "&.Mui-disabled": {
+                        bgcolor: "#fca5a5",
+                        color: "white",
+                      },
+                    }}
+                  >
+                    {deleteLoading ? "Suppression en cours..." : "Oui, supprimer définitivement"}
+                  </Button>
+                </Stack>
+              </Box>
+            </DialogContent>
+          </Dialog>
         </Container>
       </Box>
       <Footer />

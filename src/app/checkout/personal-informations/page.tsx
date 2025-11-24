@@ -144,7 +144,7 @@ export default function CoordonneesPage() {
       // Redirection selon le type d'action
       if (actionType === "prereservation") {
         // Pré-réservation : aller vers le profil
-        router.push("/profile?prereservation=success");
+        router.push("/inscription/success");
       } else {
         // Paiement direct : aller vers la page de paiement
         router.push("/checkout/paiement");
